@@ -5,10 +5,14 @@ export default function TabLayout() {
   const { t } = useLocalization();
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack>
       <Stack.Screen
         name="index"
-        options={{ title: t("home") }}
+        options={{
+          headerShown: true,
+          headerTitleAlign: "center",
+          headerTitle: () => null
+        }}
       />
     </Stack>
   );
