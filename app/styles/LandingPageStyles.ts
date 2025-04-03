@@ -4,6 +4,7 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
+    paddingTop: 40,
     backgroundColor: '#f8faf6',
     justifyContent: 'center',
   },

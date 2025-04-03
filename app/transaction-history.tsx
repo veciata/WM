@@ -1,59 +1,128 @@
-import React from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
 import { useLocalization } from "./localization/i18n";
 import { Feather } from "@expo/vector-icons";
-
-// Örnek işlem verileri
-const transactions = [
-  {
-    id: "1",
-    type: "deposit",
-    amount: "1000",
-    date: "2024-03-20",
-    status: "completed",
-  },
-  {
-    id: "2",
-    type: "withdraw",
-    amount: "500",
-    date: "2024-03-19",
-    status: "pending",
-  },
-  {
-    id: "3",
-    type: "transfer",
-    amount: "750",
-    date: "2024-03-18",
-    status: "completed",
-  },
-];
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import TransactionService, { Transaction } from "./services/transactions";
+import AuthService from "./services/auth";
 
 export default function TransactionHistoryScreen() {
   const { t } = useLocalization();
+  const router = useRouter();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const getTransactionIcon = (type: string) => {
-    switch (type) {
-      case "deposit":
-        return "arrow-down-circle";
-      case "withdraw":
-        return "arrow-up-circle";
-      case "transfer":
-        return "repeat";
-      default:
-        return "circle";
+  const transactionService = TransactionService.getInstance();
+  const authService = AuthService.getInstance();
+
+  const loadTransactions = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      const token = await AsyncStorage.getItem('token');
+
+      if (!userId || !token) {
+        router.replace('/login');
+        return;
+      }
+
+      const response = await transactionService.getTransactions(userId, token);
+      if (response.success && response.data) {
+        setTransactions(response.data);
+        setError(null);
+      } else {
+        setError(response.message || 'İşlem geçmişi yüklenemedi.');
+      }
+    } catch (error) {
+      console.error('Load transactions error:', error);
+      setError('Bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  const getTransactionColor = (type: string) => {
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    loadTransactions();
+  }, []);
+
+  useEffect(() => {
+      loadTransactions();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#daba71" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
+  // Örnek işlem verileri (fallback)
+  const fallbackTransactions: Transaction[] = [
+    {
+      id: 1,
+      userId: '1',
+      type: 'mining',
+      amount: 1000,
+      timestamp: '2024-03-20T10:00:00Z',
+      status: 'completed',
+      description: 'Mining reward'
+    },
+    {
+      id: 2,
+      userId: '1',
+      type: 'transfer',
+      amount: 500,
+      timestamp: '2024-03-19T15:30:00Z',
+      status: 'pending',
+      description: 'Transfer to wallet'
+    },
+    {
+      id: 3,
+      userId: '1',
+      type: 'reward',
+      amount: 750,
+      timestamp: '2024-03-18T09:15:00Z',
+      status: 'completed',
+      description: 'Daily reward'
+    },
+  ];
+
+  const getTransactionIcon = (type: Transaction['type']) => {
     switch (type) {
-      case "deposit":
-        return "#4CAF50";
-      case "withdraw":
-        return "#F44336";
-      case "transfer":
-        return "#2196F3";
+      case 'mining':
+        return 'cpu';
+      case 'transfer':
+        return 'repeat';
+      case 'reward':
+        return 'gift';
       default:
-        return "#757575";
+        return 'circle';
+    }
+  };
+
+  const getTransactionColor = (type: Transaction['type']) => {
+    switch (type) {
+      case 'mining':
+        return '#4CAF50';
+      case 'transfer':
+        return '#2196F3';
+      case 'reward':
+        return '#daba71';
+      default:
+        return '#757575';
     }
   };
 
@@ -70,7 +139,7 @@ export default function TransactionHistoryScreen() {
     }
   };
 
-  const renderTransaction = ({ item }: { item: typeof transactions[0] }) => (
+  const renderTransaction = ({ item }: { item: Transaction }) => (
     <TouchableOpacity style={styles.transactionItem}>
       <View style={styles.transactionIconContainer}>
         <Feather
@@ -83,7 +152,7 @@ export default function TransactionHistoryScreen() {
         <Text style={styles.transactionType}>
           {t(`transaction.${item.type}`)}
         </Text>
-        <Text style={styles.transactionDate}>{item.date}</Text>
+        <Text style={styles.transactionDate}>{new Date(item.timestamp).toLocaleDateString()}</Text>
       </View>
       <View style={styles.transactionAmountContainer}>
         <Text
@@ -92,7 +161,7 @@ export default function TransactionHistoryScreen() {
             { color: getTransactionColor(item.type) },
           ]}
         >
-          {item.type === "withdraw" ? "-" : "+"}{item.amount} $
+          {item.type === 'transfer' ? '-' : '+'}{item.amount.toFixed(2)} WM
         </Text>
         <Text style={[styles.transactionStatus, { color: getStatusColor(item.status) }]}>
           {t(`status.${item.status}`)}
@@ -104,16 +173,35 @@ export default function TransactionHistoryScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={transactions}
+        data={transactions.length > 0 ? transactions : fallbackTransactions}
         renderItem={renderTransaction}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#daba71']}
+            tintColor="#daba71"
+          />
+        }
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",

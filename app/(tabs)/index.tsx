@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Alert, Image, StyleSheet } from "react-native";
+import { View, Text, Alert, Image, StyleSheet, ActivityIndicator } from "react-native";
 import { Button } from "react-native-paper";
 import styles from "../styles/LandingPageStyles";
 import { useLocalization } from "../localization/i18n";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useMiningWithAds } from "../hooks/useMiningWithAds";
 import * as Notifications from 'expo-notifications';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
@@ -77,11 +78,27 @@ const LandingPage: React.FC = () => {
   const router = useRouter();
   const [isMiningDisabled, setIsMiningDisabled] = useState(false);
   const [remainingTime, setRemainingTime] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
+
+  const { startMiningWithAd, isLoading } = useMiningWithAds(userId);
 
   useEffect(() => {
-    checkMiningStatus();
-    registerBackgroundTask();
-    registerForPushNotificationsAsync();
+    const initializeApp = async () => {
+      const userId = await AsyncStorage.getItem('userId');
+      const token = await AsyncStorage.getItem('token');
+
+      if (!userId || !token) {
+        router.replace('/login');
+        return;
+      }
+
+      setUserId(userId);
+      await checkMiningStatus();
+      await registerBackgroundTask();
+      await registerForPushNotificationsAsync();
+    };
+
+    initializeApp();
     return () => {
       unregisterBackgroundTask();
     };
@@ -139,6 +156,10 @@ const LandingPage: React.FC = () => {
   };
 
   const handleStartMining = async () => {
+    if (!userId) {
+      Alert.alert('Hata', 'Kullanıcı bilgisi bulunamadı.');
+      return;
+    }
     try {
       const today = new Date().toDateString();
       const miningCount = await AsyncStorage.getItem(`mining_count_${today}`);
@@ -152,6 +173,10 @@ const LandingPage: React.FC = () => {
         return;
       }
 
+      // Reklam gösterimi ve API isteği
+      await startMiningWithAd();
+
+      // Başarılı olursa mining sayacını güncelle
       await AsyncStorage.setItem(`mining_count_${today}`, (currentCount + 1).toString());
       await AsyncStorage.setItem(`last_mining_time_${today}`, new Date().toISOString());
 
@@ -189,22 +214,24 @@ const LandingPage: React.FC = () => {
         source={require("../../assets/images/WM-logo.png")}
         style={styles.logo}
       />
-      <Text style={styles.title}>{t("welcome")}</Text>
 
       <View style={styles.balanceContainer}>
         <Text style={styles.balanceAmount}>1,00025 {t("coin")}</Text>
-        <Text style={styles.balanceSub}>{t("wesur")}</Text>
-        <Text style={styles.subBalance}>1AY 1256.70C</Text>
-        <Text style={styles.subBalance}>💧 560.82H10</Text>
       </View>
 
       <Button
         mode="contained"
         style={[styles.miningButton, isMiningDisabled && styles.disabledButton]}
         onPress={handleStartMining}
-        disabled={isMiningDisabled}
+        disabled={isMiningDisabled || isLoading}
       >
-        {isMiningDisabled ? t("miningInProgress") : t("startMining")}
+        {isLoading ? (
+          <ActivityIndicator color="#fff" size="small" />
+        ) : isMiningDisabled ? (
+          t("miningInProgress")
+        ) : (
+          t("startMining")
+        )}
       </Button>
 
       <Button

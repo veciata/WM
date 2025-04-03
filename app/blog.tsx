@@ -3,41 +3,80 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 import { useLocalization } from './localization/i18n';
 import { useRouter } from 'expo-router';
 
-const BlogScreen: React.FC = () => {
+interface BlogPost {
+  id: number;
+  title: string;
+  excerpt: string;
+  image: string;
+  date: string;
+  tags: string[];
+  content: string;
+}
+
+const localBlogPosts: BlogPost[] = [
+  {
+    id: 1,
+    title: 'WM Coin Nedir?',
+    excerpt: 'WM Coin, dünya çapında kullanılan yeni nesil bir kripto para birimidir...',
+    image: 'https://via.placeholder.com/300x200',
+    date: '15 Mart 2024',
+    tags: ['Kripto', 'WM Coin', 'Başlangıç'],
+    content: 'WM Coin, dünya çapında kullanılan yeni nesil bir kripto para birimidir. Güvenli, hızlı ve kullanıcı dostu özellikleriyle öne çıkan WM Coin, modern finans sisteminin vazgeçilmez bir parçası haline gelmiştir...'
+  },
+  {
+    id: 2,
+    title: 'Madencilik Nasıl Yapılır?',
+    excerpt: 'WM Coin madenciliği için gerekli adımlar ve ipuçları...',
+    image: 'https://via.placeholder.com/300x200',
+    date: '10 Mart 2024',
+    tags: ['Madencilik', 'Rehber', 'WM Coin'],
+    content: 'WM Coin madenciliği, kullanıcıların ağa katkıda bulunmasını ve ödül kazanmasını sağlayan önemli bir süreçtir. Bu rehberde, madencilik sürecinin tüm detaylarını bulabilirsiniz...'
+  },
+  {
+    id: 3,
+    title: 'Yeni Özellikler',
+    excerpt: 'WM platformuna eklenen yeni özellikler ve güncellemeler...',
+    image: 'https://via.placeholder.com/300x200',
+    date: '5 Mart 2024',
+    tags: ['Güncelleme', 'Yeni Özellikler', 'Platform'],
+    content: 'WM platformu sürekli gelişiyor ve yeni özellikler ekliyor. Bu yazıda, son güncellemelerle birlikte gelen yeni özellikleri detaylı olarak inceleyebilirsiniz...'
+  },
+];
+
+const BlogScreen = () => {
   const { t } = useLocalization();
   const router = useRouter();
+  const [remoteBlogPosts, setRemoteBlogPosts] = React.useState<BlogPost[] | null>(null);
 
-  const blogPosts = [
-    {
-      id: 1,
-      title: 'WM Coin Nedir?',
-      excerpt: 'WM Coin, dünya çapında kullanılan yeni nesil bir kripto para birimidir...',
-      image: 'https://via.placeholder.com/300x200',
-      date: '15 Mart 2024',
-      tags: ['Kripto', 'WM Coin', 'Başlangıç'],
-      content: 'WM Coin, dünya çapında kullanılan yeni nesil bir kripto para birimidir. Güvenli, hızlı ve kullanıcı dostu özellikleriyle öne çıkan WM Coin, modern finans sisteminin vazgeçilmez bir parçası haline gelmiştir...'
-    },
-    {
-      id: 2,
-      title: 'Madencilik Nasıl Yapılır?',
-      excerpt: 'WM Coin madenciliği için gerekli adımlar ve ipuçları...',
-      image: 'https://via.placeholder.com/300x200',
-      date: '10 Mart 2024',
-      tags: ['Madencilik', 'Rehber', 'WM Coin'],
-      content: 'WM Coin madenciliği, kullanıcıların ağa katkıda bulunmasını ve ödül kazanmasını sağlayan önemli bir süreçtir. Bu rehberde, madencilik sürecinin tüm detaylarını bulabilirsiniz...'
-    },
-    {
-      id: 3,
-      title: 'Yeni Özellikler',
-      excerpt: 'WM platformuna eklenen yeni özellikler ve güncellemeler...',
-      image: 'https://via.placeholder.com/300x200',
-      date: '5 Mart 2024',
-      tags: ['Güncelleme', 'Yeni Özellikler', 'Platform'],
-      content: 'WM platformu sürekli gelişiyor ve yeni özellikler ekliyor. Bu yazıda, son güncellemelerle birlikte gelen yeni özellikleri detaylı olarak inceleyebilirsiniz...'
-    },
-  ];
+  React.useEffect(() => {
+    const fetchBlogPosts = async () => {
+      try {
+        const response = await fetch('https://www.api.world-moneys.com/public/blogs');
+        const data = await response.json();
 
-  const handlePostPress = (post: typeof blogPosts[0]) => {
+        // Transform the remote data to match our BlogPost interface
+        const transformedPosts: BlogPost[] = data.data.map((post: any) => ({
+          id: post.id,
+          title: post.title,
+          excerpt: post.desc,
+          image: post.photo.replace(/\\/g, ''),
+          date: new Date(post.created_at).toLocaleDateString('tr-TR'),
+          tags: JSON.parse(post.tag),
+          content: post.detail
+        }));
+
+        setRemoteBlogPosts(transformedPosts);
+      } catch (error) {
+        console.error('Failed to fetch blog posts:', error);
+      }
+    };
+
+    fetchBlogPosts();
+  }, []);
+
+
+
+  const handlePostPress = (post: BlogPost) => {
     router.push({
       pathname: '/blog/[id]',
       params: { id: post.id }
@@ -47,10 +86,10 @@ const BlogScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>{t('blog')}</Text>
-      
-      {blogPosts.map((post) => (
-        <TouchableOpacity 
-          key={post.id} 
+
+      {(remoteBlogPosts ?? localBlogPosts).map((post) => (
+        <TouchableOpacity
+          key={post.id}
           style={styles.postCard}
           onPress={() => handlePostPress(post)}
         >
