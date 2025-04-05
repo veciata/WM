@@ -12,8 +12,13 @@ interface LoginData {
   password: string;
 }
 
-interface RegisterData extends LoginData {
-  username: string;
+interface RegisterData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  country: string;
+  password: string;
 }
 
 class AuthService {

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Alert, Image, StyleSheet, ActivityIndicator } from "react-native";
 import { Button } from "react-native-paper";
-import styles from "../styles/LandingPageStyles";
-import { useLocalization } from "../localization/i18n";
+import styles from "@styles/LandingPageStyles";
+import { useLocalization } from "@localization/i18n";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useMiningWithAds } from "../hooks/useMiningWithAds";
+import { useMiningWithAds } from "@hooks/useMiningWithAds";
 import * as Notifications from 'expo-notifications';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
@@ -88,7 +88,8 @@ const LandingPage: React.FC = () => {
       const token = await AsyncStorage.getItem('token');
 
       if (!userId || !token) {
-        router.replace('/login');
+        // Eğer kullanıcı girişi yoksa login sayfasına yönlendir
+        router.replace('/auth/login');
         return;
       }
 
@@ -205,7 +206,7 @@ const LandingPage: React.FC = () => {
   };
 
   const handleTransactionHistory = () => {
-    router.push("/transaction-history");
+    router.push("/(tabs)/transaction-history");
   };
 
   return (

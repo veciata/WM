@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
-import { useLocalization } from "./localization/i18n";
+import { useLocalization } from "@localization/i18n";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import TransactionService, { Transaction } from "./services/transactions";
-import AuthService from "./services/auth";
+import TransactionService, { Transaction } from "@services/transactions";
+import AuthService from "@services/auth";
 
 export default function TransactionHistoryScreen() {
   const { t } = useLocalization();
@@ -24,7 +24,7 @@ export default function TransactionHistoryScreen() {
       const token = await AsyncStorage.getItem('token');
 
       if (!userId || !token) {
-        router.replace('/login');
+        router.replace('/auth/login');
         return;
       }
 

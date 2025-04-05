@@ -4,9 +4,14 @@
     "strict": true,
     "jsx": "react-native",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      "@components/*": ["./components/*"],
+      "@auth/*": ["./components/auth/*"],
+      "@services/*": ["./components/services/*"],
+      "@localization/*": ["./components/localization/*"],
+      "@hooks/*": ["./components/hooks/*"],
+      "@styles/*": ["./assets/styles/*"],
+      "@blog/*": ["./components/blog/*"]
     }
   },
   "include": [

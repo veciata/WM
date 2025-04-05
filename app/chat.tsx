@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useLocalization } from './localization/i18n';
+import { useLocalization } from '@localization/i18n';
 
 const ChatScreen: React.FC = () => {
   const { t } = useLocalization();

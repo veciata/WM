@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
-import AdsService from '../services/ads';
+import AdsService from '@services/ads';
 
 interface UseMiningWithAdsResult {
   startMiningWithAd: () => Promise<void>;
@@ -55,4 +55,4 @@ export const useMiningWithAds = (userId: string): UseMiningWithAdsResult => {
   };
 };
 
-export default UseMiningWithAds;
+export default useMiningWithAds;

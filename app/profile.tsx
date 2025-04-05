@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { useLocalization } from './localization/i18n';
+import { useLocalization } from '@localization/i18n';
 
 const ProfileScreen: React.FC = () => {
   const { t } = useLocalization();

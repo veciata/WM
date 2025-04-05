@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
-import { useLocalization } from "./localization/i18n";
+import { useLocalization } from "@localization/i18n";
 
 interface FAQItem {
   question: string;
@@ -17,15 +17,22 @@ const FAQScreen = () => {
         const response = await fetch('https://www.api.world-moneys.com/public/faq');
         const data = await response.json();
 
-        const transformedFAQ: FAQItem[] = data.data.map((item: any) => ({
-          question: item.title,
-          answer: item.detail,
-        }));
+        if (Array.isArray(data)) {
+          const transformedFAQ: FAQItem[] = data.map((item: any) => {
+            return {
+              question: item.title,  // Use the 'title' as the question
+              answer: item.desc,     // Use the 'desc' as the answer
+            };
+          });
 
-        setFaqItems(transformedFAQ);
+          setFaqItems(transformedFAQ);
+        } else {
+          throw new Error('Invalid data format');
+        }
       } catch (error) {
         console.error('Failed to fetch FAQ:', error);
 
+        // Fallback FAQ items
         setFaqItems([
           {
             question: "WM Coin nedir?",

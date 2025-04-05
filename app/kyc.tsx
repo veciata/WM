@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { useLocalization } from './localization/i18n';
+import { useLocalization } from '@localization/i18n';
 import * as ImagePicker from 'expo-image-picker';
 
 const countries = [

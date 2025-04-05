@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { useLocalization } from './localization/i18n';
+import { useLocalization } from '@localization/i18n';
 import { useRouter } from 'expo-router';
+import BlogDetailScreen from '@blog/[id]';
 
 interface BlogPost {
   id: number;
