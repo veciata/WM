@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { useRouter } from 'expo-router';
-import AuthService from '@services/auth';
-import { useLocalization } from '@localization/i18n';
+import AuthService from '../../components/services/auth';
+import { useLocalization } from '../localization/i18n';
 
 const RegisterScreen = () => {
   const [firstName, setFirstName] = useState('');
@@ -54,7 +54,7 @@ const RegisterScreen = () => {
         Alert.alert('Başarılı', 'Hesabınız oluşturuldu.', [
           {
             text: 'Tamam',
-            onPress: () => router.replace('/(tabs)'),
+            onPress: () => router.replace('/drawer/home'),
           },
         ]);
       } else {
@@ -137,7 +137,7 @@ const RegisterScreen = () => {
 
       <Button
         mode="text"
-        onPress={() => router.push('/auth/login')}
+        onPress={() => router.back()}
         style={styles.loginButton}
         disabled={loading}
       >

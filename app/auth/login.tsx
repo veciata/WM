@@ -24,8 +24,9 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       const response = await authService.login({ email, password });
-      if (response.success) {
-        router.replace('/(tabs)');
+      console.log("API Response:", response);
+      if (response.token) {
+        router.replace('/drawer/home');
       } else {
         Alert.alert('Hata', response.message || 'Giriş başarısız oldu.');
       }

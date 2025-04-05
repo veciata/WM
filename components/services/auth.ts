@@ -25,7 +25,7 @@ class AuthService {
   private static instance: AuthService;
   private readonly API_URL = 'https://www.api.world-moneys.com/public/api';
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): AuthService {
     if (!AuthService.instance) {
@@ -46,12 +46,12 @@ class AuthService {
 
       const result = await response.json();
 
-      if (response.ok && result.token) {
-        await this.saveAuthData(result.token, result.userId);
+      if (response.ok && result.access_token) {
+        await this.saveAuthData(result.access_token, result.user?.id?.toString() ?? '');
         return {
           success: true,
-          token: result.token,
-          userId: result.userId,
+          token: result.access_token,
+          userId: result.user?.id?.toString() ?? '',
         };
       }
 

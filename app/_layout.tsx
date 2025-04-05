@@ -1,96 +1,40 @@
-import React, { useState } from "react";
-import { Stack } from "expo-router/stack";
-import { Drawer } from "expo-router/drawer";
-import { usePathname } from "expo-router";
+import React, { useState, useEffect } from "react";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+import { createStackNavigator } from "@react-navigation/stack";
+import { TouchableOpacity, StyleSheet, Text } from "react-native";
+import { Feather } from "@expo/vector-icons";
 import { useLocalization } from "@localization/i18n";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import LocalizationProvider from "@localization/i18n";
+import LoginScreen from './auth/login';
+import RegisterScreen from './auth/register';
 
+// Define allowed screens for authenticated users
 const allowedScreens = [
-  "(tabs)",
-  "chat",
-  "whitepaper",
-  "faq",
-  "blog",
-  "kyc",
-  "settings",
-  "profile"
+  "drawer/home",
+  "drawer/chat",
+  "drawer/whitepaper",
+  "drawer/faq",
+  "drawer/blog",
+  "drawer/kyc",
+  "drawer/settings",
+  "drawer/profile",
+  "drawer/transaction-history",
 ];
 
-export default function RootLayout() {
+const Drawer = createDrawerNavigator();
+const Stack = createStackNavigator();
+
+const AuthLayout = () => {
   const { t } = useLocalization();
-  const pathname = usePathname();
-  const isAuthScreen = pathname?.startsWith('/auth/');
-
-  if (isAuthScreen) {
-    return (
-      <LocalizationProvider>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <Stack.Screen name="auth" options={{ headerShown: false }} />
-        </Stack>
-      </LocalizationProvider>
-    );
-  }
 
   return (
-    <LocalizationProvider>
-      <Drawer
-        screenOptions={{
-          headerShown: true,
-          headerStyle: {
-            backgroundColor: '#2196F3',
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      >
-        {allowedScreens.map((screen) => (
-          <Drawer.Screen
-            key={screen}
-            name={screen}
-            options={{
-              drawerLabel: t(screen),
-              title: t(screen),
-            }}
-          />
-        ))}
-      </Drawer>
-    </LocalizationProvider>
-  );
-}
-
-function DrawerContent() {
-  const { t, currentLanguage, setLanguage } = useLocalization();
-  const [isLanguageModalVisible, setLanguageModalVisible] = useState(false);
-  const pathname = usePathname();
-  const router = useRouter();
-  const isHomePage = pathname === "/";
-
-  return (
-    <Drawer
+    <Drawer.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: "#fff" },
-        headerTintColor: "#000",
+        headerStyle: { backgroundColor: "#2196F3" },
+        headerTintColor: "#fff",
         drawerStyle: { width: 280 },
-        drawerLabelStyle: { fontSize: 16 },
         drawerActiveTintColor: "#daba71",
-        headerLeft: () =>
-          !isHomePage ? (
-            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-              <Feather name="arrow-left" size={24} color="#000" />
-            </TouchableOpacity>
-          ) : undefined,
-        headerRight: () => (
-          <TouchableOpacity style={styles.languageButton} onPress={() => setLanguageModalVisible(true)}>
-            <Text style={styles.languageText}>{currentLanguage === "tr" ? "TR" : "EN"}</Text>
-            <Feather name="chevron-down" size={20} color="#000" />
-          </TouchableOpacity>
-        ),
       }}
     >
       {allowedScreens.map((screen) => (
@@ -103,17 +47,71 @@ function DrawerContent() {
           }}
         />
       ))}
-    </Drawer>
+    </Drawer.Navigator>
   );
-}
+};
 
-export default function Layout() {
+const GuestLayout = () => {
+  const { t } = useLocalization();
+
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: true,
+        headerStyle: { backgroundColor: "#2196F3" },
+        headerTintColor: "#fff",
+      }}
+    >
+      {/* Add your guest screens like login, register, etc. */}
+      <Stack.Screen
+        name="auth/login"
+        component={LoginScreen} // Your LoginScreen component
+        options={{ title: t("login") }}
+      />
+      <Stack.Screen
+        name="auth/register"
+        component={RegisterScreen} // Your RegisterScreen component
+        options={{ title: t("register") }}
+      />
+    </Stack.Navigator>
+  );
+};
+
+const RootLayout = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null); // Add null for loading state
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const userId = await AsyncStorage.getItem("userId");
+        const token = await AsyncStorage.getItem("token");
+
+        if (userId && token) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error("Error checking auth status:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
+
+  if (isAuthenticated === null) {
+    return <Text>Loading...</Text>; // Show loading indicator while checking authentication
+  }
+
   return (
     <LocalizationProvider>
-      <DrawerContent />
+      {isAuthenticated ? <AuthLayout /> : <GuestLayout />}
     </LocalizationProvider>
   );
-}
+};
+
+export default RootLayout;
 
 const styles = StyleSheet.create({
   backButton: {

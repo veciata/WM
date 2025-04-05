@@ -12,8 +12,8 @@ module.exports = function (api) {
             '@components': './components',
             '@auth': './components/auth',
             '@services': './components/services',
-            '@localization': './components/localization',
-            '@hooks': '/hooks',
+            '@localization': './app/localization',
+            '@hooks': './hooks',
             '@styles': './assets/styles',
             '@blog': './components/blog'
           },
