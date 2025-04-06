@@ -25,6 +25,7 @@ const LoginScreen = () => {
       console.log("API Response:", response);
       if (response.success && response.token && response.userId) {
         await authService.saveAuthData(response.token, response.userId, response.user);
+        console.log('Auth data saved successfully.');
         router.replace('/drawer/home');
       } else {
         Alert.alert('Hata', response.message || 'Giriş başarısız oldu.');

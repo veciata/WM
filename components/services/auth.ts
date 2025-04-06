@@ -5,6 +5,7 @@ interface AuthResponse {
   token?: string;
   userId?: string;
   message?: string;
+  user?: any;
 }
 
 interface LoginData {
@@ -23,7 +24,7 @@ interface RegisterData {
 
 class AuthService {
   private static instance: AuthService;
-  private readonly API_URL = 'http://localhost:80/api';
+  private readonly API_URL = 'http://192.168.1.102/api';
 
   private constructor() { }
 
@@ -47,21 +48,21 @@ class AuthService {
       const result = await response.json();
 
       if (response.ok && result.access_token && result.user?.id) {
-        await this.saveAuthData(result.access_token, result.user.id.toString(), result.user);
+        await this.saveAuthData(result.access_token, result.user);
         return {
           success: true,
           token: result.access_token,
           userId: result.user.id.toString(),
+          user: result.user,
         };
       }
 
-      console.error('API Response:', result); // API yanıtını burada daha detaylı logluyoruz.
       return {
         success: false,
         message: result.message || 'Giriş başarısız oldu.',
       };
     } catch (error) {
-      console.error('Login error:', error); // Hata detayları burada loglanır.
+      console.error('Login error:', error);
       return {
         success: false,
         message: 'Bir hata oluştu. Lütfen daha sonra tekrar deneyin.',
@@ -69,38 +70,11 @@ class AuthService {
     }
   }
 
-  public async register(data: RegisterData): Promise<AuthResponse> {
-    try {
-      const response = await fetch(`${this.API_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.token) {
-        await this.saveAuthData(result.token, result.userId, result.user);
-        return {
-          success: true,
-          token: result.token,
-          userId: result.userId,
-        };
-      }
-
-      return {
-        success: false,
-        message: result.message || 'Kayıt başarısız oldu.',
-      };
-    } catch (error) {
-      console.error('Register error:', error);
-      return {
-        success: false,
-        message: 'Bir hata oluştu. Lütfen daha sonra tekrar deneyin.',
-      };
-    }
+  private async saveAuthData(token: string, user: any): Promise<void> {
+    await AsyncStorage.multiSet([
+      ['token', token],
+      ['user', JSON.stringify(user)],  // User bilgilerini JSON string olarak kaydediyoruz
+    ]);
   }
 
   public async isAuthenticated(): Promise<boolean> {
@@ -108,25 +82,13 @@ class AuthService {
     return !!token;
   }
 
-  private async saveAuthData(token: string, userId: string, user: any): Promise<void> {
-    await AsyncStorage.multiSet([
-      ['token', token],
-      ['userId', userId],
-      ['user', JSON.stringify(user)],
-    ]);
-  }
-
-  public async getAuthToken(): Promise<string | null> {
-    return AsyncStorage.getItem('token');
-  }
-
-  public async getUser(): Promise<any> {
+  public async getUserData(): Promise<any> {
     const user = await AsyncStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   }
 
-  public async logout(): Promise<void> {
-    await AsyncStorage.multiRemove(['token', 'userId', 'user']);
+  public async getAuthToken(): Promise<string | null> {
+    return AsyncStorage.getItem('token');
   }
 }
 
