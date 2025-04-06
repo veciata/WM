@@ -14,22 +14,18 @@ const ProfileScreen: React.FC = () => {
     const fetchUserInfo = async () => {
       try {
         // Retrieve user data from AsyncStorage
-        const userId = await AsyncStorage.getItem('userId');
+        const userData = await AsyncStorage.getItem('user');
         const token = await AsyncStorage.getItem('token');
 
-        if (!userId || !token) {
+        if (!userData || !token) {
           router.replace('/auth/login');
           return;
         }
 
-        // Retrieve user information from AsyncStorage or API
-        // Here you can replace it with a fetch request if needed
-        const userName = await AsyncStorage.getItem('userName');
-        const userEmail = await AsyncStorage.getItem('userEmail');
-
+        const parsedUser = JSON.parse(userData); // Parse the stored JSON string
         setUserInfo({
-          userName: userName || 'Kullanıcı Adı',
-          userEmail: userEmail || 'kullanici@email.com',
+          userName: parsedUser.userName || 'Kullanıcı Adı',
+          userEmail: parsedUser.userEmail || 'kullanici@email.com',
         });
 
       } catch (error) {
@@ -47,7 +43,7 @@ const ProfileScreen: React.FC = () => {
 
       if (!token) {
         // If no token exists, directly proceed to logout
-        await AsyncStorage.removeItem('userId');
+        await AsyncStorage.removeItem('user');
         await AsyncStorage.removeItem('token');
         router.replace('/auth/login');
         return;
@@ -64,7 +60,7 @@ const ProfileScreen: React.FC = () => {
 
       if (response.ok) {
         // On successful logout, remove token and user ID from AsyncStorage
-        await AsyncStorage.removeItem('userId');
+        await AsyncStorage.removeItem('user');
         await AsyncStorage.removeItem('token');
 
         // Redirect to login screen

@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import AuthService from '@services/auth';
 import { useLocalization } from '@localization/i18n';
 
-const LoginScreen = () => {
+const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,7 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Hata', 'Lütfen tüm alanları doldurun.');
+      Alert.alert('Error', 'Please fill all fields.');
       return;
     }
 
@@ -23,16 +23,21 @@ const LoginScreen = () => {
     try {
       const response = await authService.login({ email, password });
       console.log("API Response:", response);
-      if (response.success && response.token && response.userId) {
-        await authService.saveAuthData(response.token, response.userId, response.user);
+
+      if (response.success && response.token) {
         console.log('Auth data saved successfully.');
-        router.replace('/drawer/home');
+        // Use either React Navigation or Expo Router, not both
+        if (navigation) {
+          navigation.replace('home'); // Using React Navigation
+        } else {
+          router.replace('/'); // Using Expo Router
+        }
       } else {
-        Alert.alert('Hata', response.message || 'Giriş başarısız oldu.');
+        Alert.alert('Error', response.message || 'Login failed.');
       }
     } catch (error) {
       console.error('Login error:', error);
-      Alert.alert('Hata', 'Bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+      Alert.alert('Error', 'An error occurred. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -43,7 +48,7 @@ const LoginScreen = () => {
       <Text style={styles.title}>World Money</Text>
 
       <TextInput
-        label="E-posta"
+        label="Email"
         value={email}
         onChangeText={setEmail}
         style={styles.input}
@@ -52,7 +57,7 @@ const LoginScreen = () => {
       />
 
       <TextInput
-        label="Şifre"
+        label="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -65,7 +70,7 @@ const LoginScreen = () => {
         style={styles.button}
         disabled={loading}
       >
-        {loading ? <ActivityIndicator color="#fff" /> : 'Giriş Yap'}
+        {loading ? <ActivityIndicator color="#fff" /> : 'Login'}
       </Button>
 
       <Button
@@ -74,7 +79,7 @@ const LoginScreen = () => {
         style={styles.registerButton}
         disabled={loading}
       >
-        Hesabın yok mu? Kayıt ol
+        Don't have an account? Register
       </Button>
     </View>
   );
@@ -103,7 +108,6 @@ const styles = StyleSheet.create({
     padding: 4,
     backgroundColor: '#daba71',
   },
-
   registerButton: {
     marginTop: 16,
   },

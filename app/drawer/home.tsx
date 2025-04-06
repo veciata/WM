@@ -77,6 +77,7 @@ const Home: React.FC = () => {
   const [isMiningDisabled, setIsMiningDisabled] = useState(false);
   const [remainingTime, setRemainingTime] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
+  const [userBalance, setUserBalance] = useState<string>("0");
 
   const { startMiningWithAd, isLoading } = useMiningWithAds(userId);
   const adsService = AdsService.getInstance(); // Get instance of AdsService
@@ -92,6 +93,14 @@ const Home: React.FC = () => {
       }
 
       setUserId(userId);
+
+      // Fetch user data and balance
+      const userJson = await AsyncStorage.getItem('user');
+      if (userJson) {
+        const user = JSON.parse(userJson);
+        setUserBalance(user.balance);
+      }
+
       await checkMiningStatus();
       await registerBackgroundTask();
       await registerForPushNotificationsAsync();
@@ -227,7 +236,7 @@ const Home: React.FC = () => {
       />
 
       <View style={styles.balanceContainer}>
-        <Text style={styles.balanceAmount}>1,00025 {t("coin")}</Text>
+        <Text style={styles.balanceAmount}>{userBalance} {t("coin")}</Text>
       </View>
 
       <Button
