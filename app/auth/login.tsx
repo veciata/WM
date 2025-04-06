@@ -13,8 +13,6 @@ const LoginScreen = () => {
   const { t } = useLocalization();
   const authService = AuthService.getInstance();
 
-
-
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Hata', 'Lütfen tüm alanları doldurun.');
@@ -25,7 +23,8 @@ const LoginScreen = () => {
     try {
       const response = await authService.login({ email, password });
       console.log("API Response:", response);
-      if (response.token) {
+      if (response.success && response.token && response.userId) {
+        await authService.saveAuthData(response.token, response.userId, response.user);
         router.replace('/drawer/home');
       } else {
         Alert.alert('Hata', response.message || 'Giriş başarısız oldu.');
@@ -37,8 +36,6 @@ const LoginScreen = () => {
       setLoading(false);
     }
   };
-
-
 
   return (
     <View style={styles.container}>
@@ -69,8 +66,6 @@ const LoginScreen = () => {
       >
         {loading ? <ActivityIndicator color="#fff" /> : 'Giriş Yap'}
       </Button>
-
-
 
       <Button
         mode="text"

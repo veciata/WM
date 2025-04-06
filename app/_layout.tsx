@@ -1,25 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
-import { TouchableOpacity, StyleSheet, Text } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { StyleSheet, Text, ActivityIndicator } from "react-native";
 import { useLocalization } from "@localization/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LocalizationProvider from "@localization/i18n";
+import Home from './drawer/home'; // Make sure to import your screen components
+import Chat from './chat';
+import Whitepaper from './whitepaper';
+import Faq from './faq';
+import Blog from './blog';
+import Kyc from './kyc';
+import Settings from './settings';
+import Profile from './profile';
 import LoginScreen from './auth/login';
 import RegisterScreen from './auth/register';
 
 // Define allowed screens for authenticated users
 const allowedScreens = [
-  "drawer/home",
-  "drawer/chat",
-  "drawer/whitepaper",
-  "drawer/faq",
-  "drawer/blog",
-  "drawer/kyc",
-  "drawer/settings",
-  "drawer/profile",
-  "drawer/transaction-history",
+  { name: "Home", component: Home },
+  { name: "Chat", component: Chat },
+  { name: "Whitepaper", component: Whitepaper },
+  { name: "Faq", component: Faq },
+  { name: "Blog", component: Blog },
+  { name: "Kyc", component: Kyc },
+  { name: "Settings", component: Settings },
+  { name: "Profile", component: Profile },
 ];
 
 const Drawer = createDrawerNavigator();
@@ -37,13 +43,14 @@ const AuthLayout = () => {
         drawerActiveTintColor: "#daba71",
       }}
     >
-      {allowedScreens.map((screen) => (
+      {allowedScreens.map(({ name, component }) => (
         <Drawer.Screen
-          key={screen}
-          name={screen}
+          key={name}
+          name={`drawer/${name}`}
+          component={component}
           options={{
-            drawerLabel: t(screen),
-            title: t(screen),
+            drawerLabel: t(name),
+            title: t(name),
           }}
         />
       ))}
@@ -62,15 +69,14 @@ const GuestLayout = () => {
         headerTintColor: "#fff",
       }}
     >
-      {/* Add your guest screens like login, register, etc. */}
       <Stack.Screen
         name="auth/login"
-        component={LoginScreen} // Your LoginScreen component
+        component={LoginScreen}
         options={{ title: t("login") }}
       />
       <Stack.Screen
         name="auth/register"
-        component={RegisterScreen} // Your RegisterScreen component
+        component={RegisterScreen}
         options={{ title: t("register") }}
       />
     </Stack.Navigator>
@@ -78,7 +84,7 @@ const GuestLayout = () => {
 };
 
 const RootLayout = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null); // Add null for loading state
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -101,7 +107,7 @@ const RootLayout = () => {
   }, []);
 
   if (isAuthenticated === null) {
-    return <Text>Loading...</Text>; // Show loading indicator while checking authentication
+    return <ActivityIndicator size="large" color="#2196F3" />; // Improved loading indicator
   }
 
   return (

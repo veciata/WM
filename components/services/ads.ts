@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AdResponse {
   success: boolean;
@@ -22,6 +23,11 @@ class AdsService {
     return AdsService.instance;
   }
 
+  // Initialize Ads service
+  public async init(): Promise<void> {
+    await this.checkAdServiceAvailability();
+  }
+
   private async checkAdServiceAvailability(): Promise<void> {
     try {
       // Here you would typically check if Google Ads SDK is available
@@ -39,6 +45,7 @@ class AdsService {
 
   public async showRewardedAd(): Promise<boolean> {
     if (!this.isAdServiceAvailable) {
+      console.error('Ad service is not available.');
       return false;
     }
 
@@ -59,19 +66,30 @@ class AdsService {
 
   public async notifyAdCompletion(userId: string): Promise<AdResponse> {
     try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        console.error('No token found in AsyncStorage');
+        return {
+          success: false,
+          message: 'Token bulunamadı.',
+        };
+      }
+
       const response = await fetch(`${this.API_URL}/mining/ad-completed`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userId,
+          user_id: userId, // updated to snake_case
           platform: Platform.OS,
           timestamp: new Date().toISOString(),
         }),
       });
 
       if (!response.ok) {
+        console.error('Network response was not ok');
         throw new Error('Network response was not ok');
       }
 

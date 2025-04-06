@@ -9,12 +9,12 @@ import { useMiningWithAds } from "@hooks/useMiningWithAds";
 import * as Notifications from 'expo-notifications';
 import * as BackgroundFetch from 'expo-background-fetch';
 import * as TaskManager from 'expo-task-manager';
+import AdsService from '@services/ads'; // Import AdsService
 
 const DAILY_MINING_LIMIT = 4;
 const COOLDOWN_HOURS = 23;
 const BACKGROUND_FETCH_TASK = 'BACKGROUND_FETCH_TASK';
 
-// Bildirim izinlerini ayarla
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -23,7 +23,6 @@ Notifications.setNotificationHandler({
   }),
 });
 
-// Bildirim izinlerini iste
 async function registerForPushNotificationsAsync() {
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
@@ -44,7 +43,6 @@ async function registerForPushNotificationsAsync() {
   return true;
 }
 
-// Arka plan görevi tanımla
 TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   try {
     const today = new Date().toDateString();
@@ -73,7 +71,7 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
   }
 });
 
-const LandingPage: React.FC = () => {
+const Home: React.FC = () => {
   const { t } = useLocalization();
   const router = useRouter();
   const [isMiningDisabled, setIsMiningDisabled] = useState(false);
@@ -81,6 +79,7 @@ const LandingPage: React.FC = () => {
   const [userId, setUserId] = useState<string>("");
 
   const { startMiningWithAd, isLoading } = useMiningWithAds(userId);
+  const adsService = AdsService.getInstance(); // Get instance of AdsService
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -88,7 +87,6 @@ const LandingPage: React.FC = () => {
       const token = await AsyncStorage.getItem('token');
 
       if (!userId || !token) {
-        // Eğer kullanıcı girişi yoksa login sayfasına yönlendir
         router.replace('/auth/login');
         return;
       }
@@ -108,7 +106,7 @@ const LandingPage: React.FC = () => {
   const registerBackgroundTask = async () => {
     try {
       await BackgroundFetch.registerTaskAsync(BACKGROUND_FETCH_TASK, {
-        minimumInterval: 60 * 60, // Her saat başı kontrol et
+        minimumInterval: 60 * 60,
         stopOnTerminate: false,
         startOnBoot: true,
       });
@@ -161,7 +159,21 @@ const LandingPage: React.FC = () => {
       Alert.alert('Hata', 'Kullanıcı bilgisi bulunamadı.');
       return;
     }
+
     try {
+      // Ensure ads are available before proceeding with mining
+      const isAdAvailable = adsService.isAvailable();
+      if (!isAdAvailable) {
+        Alert.alert('Reklam Hatası', 'Reklam servisi kullanılamıyor.');
+        return;
+      }
+
+      const isAdWatched = await adsService.showRewardedAd();
+      if (!isAdWatched) {
+        Alert.alert('Reklam İzleme Hatası', 'Reklam izleme başarısız oldu.');
+        return;
+      }
+
       const today = new Date().toDateString();
       const miningCount = await AsyncStorage.getItem(`mining_count_${today}`);
       const currentCount = miningCount ? parseInt(miningCount) : 0;
@@ -174,10 +186,8 @@ const LandingPage: React.FC = () => {
         return;
       }
 
-      // Reklam gösterimi ve API isteği
       await startMiningWithAd();
 
-      // Başarılı olursa mining sayacını güncelle
       await AsyncStorage.setItem(`mining_count_${today}`, (currentCount + 1).toString());
       await AsyncStorage.setItem(`last_mining_time_${today}`, new Date().toISOString());
 
@@ -206,7 +216,7 @@ const LandingPage: React.FC = () => {
   };
 
   const handleTransactionHistory = () => {
-    router.push("/(tabs)/transaction-history");
+    router.push("/drawer/transaction-history");
   };
 
   return (
@@ -246,4 +256,4 @@ const LandingPage: React.FC = () => {
   );
 };
 
-export default LandingPage;
+export default Home;

@@ -39,6 +39,12 @@ const RegisterScreen = () => {
       return;
     }
 
+    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/;
+    if (!phoneRegex.test(phone)) {
+      Alert.alert('Hata', 'Geçerli bir telefon numarası giriniz.');
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await authService.register({
@@ -49,6 +55,8 @@ const RegisterScreen = () => {
         country,
         password,
       });
+
+      console.log('Register response:', response);
 
       if (response.success) {
         Alert.alert('Başarılı', 'Hesabınız oluşturuldu.', [
