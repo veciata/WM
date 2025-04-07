@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
-import { StyleSheet, Text, ActivityIndicator } from "react-native";
+import { ActivityIndicator, View, TouchableOpacity, Text } from "react-native";
 import { useLocalization } from "@localization/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LocalizationProvider from "@localization/i18n";
-import Home from './drawer/home'; // Make sure to import your screen components
+import Home from './drawer/home';
 import Chat from './chat';
 import Whitepaper from './whitepaper';
 import Faq from './faq';
@@ -15,58 +15,99 @@ import Settings from './settings';
 import Profile from './profile';
 import LoginScreen from './auth/login';
 import RegisterScreen from './auth/register';
-
-// Define allowed screens for authenticated users
-const allowedScreens = [
-  { name: "Home", component: Home },
-  { name: "Chat", component: Chat },
-  { name: "Whitepaper", component: Whitepaper },
-  { name: "Faq", component: Faq },
-  { name: "Blog", component: Blog },
-  { name: "Kyc", component: Kyc },
-  { name: "Settings", component: Settings },
-  { name: "Profile", component: Profile },
-];
+import { Ionicons } from '@expo/vector-icons';
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
-const AuthLayout = () => {
+const LanguageSelector = () => {
+  const { t, locale, setLocale } = useLocalization();
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const languages = [
+    { code: 'en', name: 'English' },
+    { code: 'tr', name: 'Türkçe' },
+    // Add more languages as needed
+  ];
+
+  return (
+    <View style={{ marginRight: 15 }}>
+      <TouchableOpacity onPress={() => setShowDropdown(!showDropdown)}>
+        <Ionicons name="language" size={24} color="white" />
+      </TouchableOpacity>
+
+      {showDropdown && (
+        <View style={{
+          position: 'absolute',
+          right: 0,
+          top: 30,
+          backgroundColor: 'white',
+          borderRadius: 5,
+          padding: 10,
+          zIndex: 100,
+          elevation: 5,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.25,
+          shadowRadius: 3.84,
+        }}>
+          {languages.map((lang) => (
+            <TouchableOpacity
+              key={lang.code}
+              onPress={() => {
+                setLocale(lang.code);
+                setShowDropdown(false);
+              }}
+              style={{
+                padding: 8,
+                backgroundColor: locale === lang.code ? '#f0f0f0' : 'transparent',
+                borderRadius: 4,
+              }}
+            >
+              <Text>{lang.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
+
+const MainApp = () => {
   const { t } = useLocalization();
 
   return (
     <Drawer.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: "#2196F3" },
+        headerStyle: { backgroundColor: "#324D4C" },
         headerTintColor: "#fff",
         drawerStyle: { width: 280 },
         drawerActiveTintColor: "#daba71",
+        headerRight: () => <LanguageSelector />,
       }}
     >
-      {allowedScreens.map(({ name, component }) => (
-        <Drawer.Screen
-          key={name}
-          name={`drawer/${name}`}
-          component={component}
-          options={{
-            drawerLabel: t(name),
-            title: t(name),
-          }}
-        />
-      ))}
+      <Drawer.Screen name="Home" component={Home} options={{ title: t("Home") }} />
+      <Drawer.Screen name="Chat" component={Chat} options={{ title: t("Chat") }} />
+      <Drawer.Screen name="Whitepaper" component={Whitepaper} options={{ title: t("Whitepaper") }} />
+      <Drawer.Screen name="Faq" component={Faq} options={{ title: t("Faq") }} />
+      <Drawer.Screen name="Blog" component={Blog} options={{ title: t("Blog") }} />
+      <Drawer.Screen name="Kyc" component={Kyc} options={{ title: t("Kyc") }} />
+      <Drawer.Screen name="Settings" component={Settings} options={{ title: t("Settings") }} />
+      <Drawer.Screen name="Profile" component={Profile} options={{ title: t("Profile") }} />
     </Drawer.Navigator>
   );
 };
 
-const GuestLayout = () => {
+const AuthStack = () => {
   const { t } = useLocalization();
 
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: true,
-        headerStyle: { backgroundColor: "#2196F3" },
+        headerStyle: { backgroundColor: "#324D4C" },
         headerTintColor: "#fff",
+        headerRight: () => <LanguageSelector />,
       }}
     >
       <Stack.Screen
@@ -89,14 +130,8 @@ const RootLayout = () => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const userId = await AsyncStorage.getItem("userId");
         const token = await AsyncStorage.getItem("token");
-
-        if (userId && token) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
+        setIsAuthenticated(!!token);
       } catch (error) {
         console.error("Error checking auth status:", error);
         setIsAuthenticated(false);
@@ -104,35 +139,21 @@ const RootLayout = () => {
     };
 
     checkAuthStatus();
+
+    // Listen for auth changes
+    const interval = setInterval(checkAuthStatus, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   if (isAuthenticated === null) {
-    return <ActivityIndicator size="large" color="#2196F3" />; // Improved loading indicator
+    return <ActivityIndicator size="large" color="#324D4C" />;
   }
 
   return (
     <LocalizationProvider>
-      {isAuthenticated ? <AuthLayout /> : <GuestLayout />}
+      {isAuthenticated ? <MainApp /> : <AuthStack />}
     </LocalizationProvider>
   );
 };
 
 export default RootLayout;
-
-const styles = StyleSheet.create({
-  backButton: {
-    marginLeft: 15,
-    padding: 8,
-  },
-  languageButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 15,
-    padding: 8,
-  },
-  languageText: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginRight: 4,
-  },
-});
