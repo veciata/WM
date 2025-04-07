@@ -21,7 +21,7 @@ const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
 const LanguageSelector = () => {
-  const { t, locale, setLocale } = useLocalization();
+  const { t, locale, setLanguage } = useLocalization();
   const [showDropdown, setShowDropdown] = useState(false);
 
   const languages = [
@@ -39,32 +39,33 @@ const LanguageSelector = () => {
       {showDropdown && (
         <View style={{
           position: 'absolute',
+          top: 40,
           right: 0,
-          top: 30,
           backgroundColor: 'white',
-          borderRadius: 5,
-          padding: 10,
-          zIndex: 100,
-          elevation: 5,
+          borderRadius: 8,
+          padding: 4,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.25,
-          shadowRadius: 3.84,
+          shadowRadius: 4,
+          elevation: 5,
+          zIndex: 1000,
         }}>
           {languages.map((lang) => (
             <TouchableOpacity
               key={lang.code}
               onPress={() => {
-                setLocale(lang.code);
+                setLanguage(lang.code);
                 setShowDropdown(false);
               }}
               style={{
                 padding: 8,
                 backgroundColor: locale === lang.code ? '#f0f0f0' : 'transparent',
                 borderRadius: 4,
+                minWidth: 100,
               }}
             >
-              <Text>{lang.name}</Text>
+              <Text style={{ color: '#000' }}>{lang.name}</Text>
             </TouchableOpacity>
           ))}
         </View>

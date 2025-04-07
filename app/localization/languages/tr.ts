@@ -26,4 +26,16 @@ export default {
   },
   whitepaper: "Whitepaper",
   faq: "Sık Sorulan Sorular",
+  register: "Kayıt Ol",
+  login: "Giriş Yap",
+  firstName: "İsim",
+  lastName: "Soyisim",
+  email: "E-posta",
+  tel: "Telefon Numarası",
+  country: "Ülke",
+  password: "Şifre",
+  passwordConfirm: "Şifre Onayla",
+  "dontHaveAccount": "Hesabın yok mu?",
+  "registerNow": "Kayıt ol",
+  "alreadyHaveAccount": "Already have an account? Login"
 };

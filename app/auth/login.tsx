@@ -48,7 +48,7 @@ const LoginScreen = ({ navigation }) => {
       <Text style={styles.title}>World Money</Text>
 
       <TextInput
-        label="Email"
+        label={t('email')}
         value={email}
         onChangeText={setEmail}
         style={styles.input}
@@ -57,7 +57,7 @@ const LoginScreen = ({ navigation }) => {
       />
 
       <TextInput
-        label="Password"
+        label={t('password')}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -70,7 +70,11 @@ const LoginScreen = ({ navigation }) => {
         style={styles.button}
         disabled={loading}
       >
-        {loading ? <ActivityIndicator color="#fff" /> : 'Login'}
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text>{t('login')}</Text>
+        )}
       </Button>
 
       <Button
@@ -79,7 +83,7 @@ const LoginScreen = ({ navigation }) => {
         style={styles.registerButton}
         disabled={loading}
       >
-        Don't have an account? Register
+        {`${t('dontHaveAccount')} ${t('registerNow')}`}
       </Button>
     </View>
   );

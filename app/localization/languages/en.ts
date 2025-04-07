@@ -25,4 +25,16 @@ export default {
   },
   whitepaper: "Whitepaper",
   faq: "FAQ",
+  register: "Register",
+  login: "Login",
+  firstName: "Name",
+  lastName: "Last Name",
+  email: "E-posta",
+  tel: "Phone Number",
+  country: "Country",
+  password: "Password",
+  passwordConfirm: "Password Confirmation",
+  "dontHaveAccount": "Don't have an account?",
+  "registerNow": "Register Now",
+  "alreadyHaveAccount": "Already have an account? Login"
 };

@@ -80,22 +80,23 @@ const RegisterScreen = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Kayıt Ol</Text>
 
+
       <TextInput
-        label="Ad"
+        label={t('firstName')}
         value={firstName}
         onChangeText={setFirstName}
         style={styles.input}
       />
 
       <TextInput
-        label="Soyad"
+        label={t('lastName')}
         value={lastName}
         onChangeText={setLastName}
         style={styles.input}
       />
 
       <TextInput
-        label="E-posta"
+        label={t('email')}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -104,7 +105,7 @@ const RegisterScreen = () => {
       />
 
       <TextInput
-        label="Telefon"
+        label={t('tel')}
         value={phone}
         onChangeText={setPhone}
         keyboardType="phone-pad"
@@ -112,14 +113,14 @@ const RegisterScreen = () => {
       />
 
       <TextInput
-        label="Ülke"
+        label={t('country')}
         value={country}
         onChangeText={setCountry}
         style={styles.input}
       />
 
       <TextInput
-        label="Şifre"
+        label={t('password')}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -127,7 +128,7 @@ const RegisterScreen = () => {
       />
 
       <TextInput
-        label="Şifre Tekrar"
+        label={t('passwordConfirm')}
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
@@ -140,7 +141,7 @@ const RegisterScreen = () => {
         style={styles.button}
         disabled={loading}
       >
-        {loading ? <ActivityIndicator color="#fff" /> : 'Kayıt Ol'}
+        {loading ? <ActivityIndicator color="#fff" /> : t('registerNow')}
       </Button>
 
       <Button
@@ -149,7 +150,7 @@ const RegisterScreen = () => {
         style={styles.loginButton}
         disabled={loading}
       >
-        Zaten hesabın var mı? Giriş yap
+        {t('alreadyHaveAccount')}
       </Button>
     </View>
   );

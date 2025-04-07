@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class AuthService {
   private static instance: AuthService;
-  private readonly API_URL = 'http://192.168.1.102/api';
+  private readonly API_URL = 'https://api.world-moneys.com/public/api';
 
   private constructor() { }
 
