@@ -46,6 +46,45 @@ class AuthService {
       };
     }
   }
+  public async register(data: {
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    country: string
+    password: string
+  }) {
+    try {
+      const response = await fetch(`${this.API_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        return {
+          success: true,
+          user: result.user,
+        }
+      }
+
+      return {
+        success: false,
+        message: result.message || 'Register failed',
+      }
+    } catch (error) {
+      console.error('Register error:', error)
+      return {
+        success: false,
+        message: 'An error occurred. Please try again later.',
+      }
+    }
+  }
+
 
   private async saveAuthData(token: string, user: any) {
     try {

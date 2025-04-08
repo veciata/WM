@@ -72,6 +72,8 @@ TaskManager.defineTask(BACKGROUND_FETCH_TASK, async () => {
 });
 
 const Home: React.FC = () => {
+  const API_URL = 'https://api.world-moneys.com/public/api';
+
   const { t } = useLocalization();
   const router = useRouter();
   const [isMiningDisabled, setIsMiningDisabled] = useState(false);
@@ -82,33 +84,59 @@ const Home: React.FC = () => {
   const { startMiningWithAd, isLoading } = useMiningWithAds(userId);
   const adsService = AdsService.getInstance(); // Get instance of AdsService
 
-  useEffect(() => {
-    const initializeApp = async () => {
-      const userId = await AsyncStorage.getItem('userId');
+  const fetchUserBalance = async () => {
+    try {
       const token = await AsyncStorage.getItem('token');
+      if (!token || !userId) return;
 
-      if (!userId || !token) {
+      const response = await fetch(`${API_URL}/auth/user}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setUserBalance(userData.balance);
+        console.log(userData);
+        // Update the stored user data
+        await AsyncStorage.setItem('user', JSON.stringify(userData));
+      }
+    } catch (error) {
+      console.error('Error fetching user balance:', error);
+    }
+  };
+
+  useEffect(() => {
+    let balanceInterval: ReturnType<typeof setInterval>;
+
+    const initializeApp = async () => {
+      const token = await AsyncStorage.getItem('token');
+      const userJson = await AsyncStorage.getItem('user');
+
+      if (!token || !userJson) {
         router.replace('/auth/login');
         return;
       }
 
-      setUserId(userId);
-
-      // Fetch user data and balance
-      const userJson = await AsyncStorage.getItem('user');
-      if (userJson) {
-        const user = JSON.parse(userJson);
-        setUserBalance(user.balance);
-      }
+      const user = JSON.parse(userJson);
+      setUserId(user.id.toString());
+      setUserBalance(user.balance);
 
       await checkMiningStatus();
       await registerBackgroundTask();
       await registerForPushNotificationsAsync();
+
+      // Set up refresh interval for balance after initialization
+      balanceInterval = setInterval(fetchUserBalance, 30000); // Update every 30 seconds
     };
 
     initializeApp();
     return () => {
       unregisterBackgroundTask();
+      clearInterval(balanceInterval);
     };
   }, []);
 
@@ -196,6 +224,7 @@ const Home: React.FC = () => {
       }
 
       await startMiningWithAd();
+      await fetchUserBalance(); // Fetch updated balance after mining
 
       await AsyncStorage.setItem(`mining_count_${today}`, (currentCount + 1).toString());
       await AsyncStorage.setItem(`last_mining_time_${today}`, new Date().toISOString());
@@ -236,7 +265,7 @@ const Home: React.FC = () => {
       />
 
       <View style={styles.balanceContainer}>
-        <Text style={styles.balanceAmount}>{userBalance} {t("coin")}</Text>
+        <Text style={styles.balanceAmount}>{userBalance} {t("coin") ?? WM}</Text>
       </View>
 
       <Button

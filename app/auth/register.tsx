@@ -40,7 +40,7 @@ const RegisterScreen = () => {
     }
 
     const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/;
-    if (!phoneRegex.test(phone)) {
+    if (!phoneRegex.test(phone) || phone.length > 15) {
       Alert.alert('Hata', 'Geçerli bir telefon numarası giriniz.');
       return;
     }
@@ -59,10 +59,10 @@ const RegisterScreen = () => {
       console.log('Register response:', response);
 
       if (response.success) {
-        Alert.alert('Başarılı', 'Hesabınız oluşturuldu.', [
+        Alert.alert('Başarılı', 'Hesabınız oluşturuldu, lütfen giriş yapınız.', [
           {
             text: 'Tamam',
-            onPress: () => router.replace('/drawer/home'),
+            onPress: () => router.replace('/auth/login'),
           },
         ]);
       } else {

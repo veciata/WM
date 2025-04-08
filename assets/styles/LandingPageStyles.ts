@@ -15,8 +15,8 @@ export default StyleSheet.create({
     justifyContent: 'center',
   },
   logo: {
-    width: 200,
-    height: 60,
+    width: 600,
+    height: 190,
     marginBottom: 30,
     alignSelf: 'center',
     resizeMode: 'contain'

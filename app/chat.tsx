@@ -8,7 +8,7 @@ const ChatScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t('chat')}</Text>
-      <Text style={styles.subtitle}>Yakında burada sohbet özelliği olacak</Text>
+      <Text style={styles.subtitle}>{t('commingsoon')}</Text>
     </View>
   );
 };

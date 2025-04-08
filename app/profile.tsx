@@ -1,35 +1,59 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from "react-native-paper";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useLocalization } from '@localization/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
+interface UserInfo {
+  userName: string;
+  userEmail: string;
+  userBalance: number;
+  userCreatedAt: string;
+}
+
+const formatDate = (dateString: string) => {
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  };
+  return new Date(dateString).toLocaleDateString(undefined, options);
+};
+
 const ProfileScreen: React.FC = () => {
   const { t } = useLocalization();
   const router = useRouter();
-  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        // Retrieve user data from AsyncStorage
-        const userData = await AsyncStorage.getItem('user');
-        const token = await AsyncStorage.getItem('token');
+        const [userData, token] = await Promise.all([
+          AsyncStorage.getItem('user'),
+          AsyncStorage.getItem('token')
+        ]);
 
         if (!userData || !token) {
+          await AsyncStorage.multiRemove(['user', 'token']);
           router.replace('/auth/login');
           return;
         }
 
-        const parsedUser = JSON.parse(userData); // Parse the stored JSON string
-        setUserInfo({
-          userName: parsedUser.userName || 'Kullanıcı Adı',
-          userEmail: parsedUser.userEmail || 'kullanici@email.com',
-        });
+        const parsedUserData = JSON.parse(userData);
 
+        setUserInfo({
+          userName: parsedUserData.name || t('profile.default_name'),
+          userEmail: parsedUserData.email || t('profile.default_email'),
+          userBalance: parsedUserData.balance || 0,
+          userCreatedAt: formatDate(parsedUserData.created_at),
+        });
       } catch (error) {
         console.error("Error fetching user info:", error);
+        router.replace('/auth/login');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -38,79 +62,61 @@ const ProfileScreen: React.FC = () => {
 
   const logout = async () => {
     try {
-      // Retrieve token from AsyncStorage
-      const token = await AsyncStorage.getItem('token');
+      const [token, user] = await AsyncStorage.multiGet(['token', 'user']);
 
-      if (!token) {
-        // If no token exists, directly proceed to logout
-        await AsyncStorage.removeItem('user');
-        await AsyncStorage.removeItem('token');
+      if (!token[1] || !user[1]) {
+        await AsyncStorage.multiRemove(['user', 'token']);
         router.replace('/auth/login');
         return;
       }
 
-      // Making a fetch request to the API for logout
       const response = await fetch('https://api.world-moneys.com/public/api/auth/logout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${token[1]}`,
         },
       });
 
-      if (response.ok) {
-        // On successful logout, remove token and user ID from AsyncStorage
-        await AsyncStorage.removeItem('user');
-        await AsyncStorage.removeItem('token');
-
-        // Redirect to login screen
-        router.replace('/auth/login');
-      } else {
-        // Handle any issues with the logout API response
-        const errorMessage = await response.text();
-        console.error('Logout failed:', errorMessage);
-        alert("Logout failed. Please try again.");
+      if (!response.ok) {
+        throw new Error(await response.text());
       }
+
+      await AsyncStorage.multiRemove(['user', 'token']);
+      router.replace('/auth/login');
     } catch (error) {
       console.error("Error during logout:", error);
-      alert("An error occurred while logging out.");
     }
   };
 
-  if (!userInfo) {
-    return null; // Optionally, you can show a loading spinner until user info is available
+  if (loading || !userInfo) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Image
-            source={{ uri: 'https://via.placeholder.com/100' }}
-            style={styles.avatar}
-          />
-        </View>
         <Text style={styles.username}>{userInfo.userName}</Text>
         <Text style={styles.email}>{userInfo.userEmail}</Text>
       </View>
 
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>1,000.25</Text>
+          <Text style={styles.statValue}>{userInfo.userBalance}</Text>
           <Text style={styles.statLabel}>WM</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>1256.70</Text>
-          <Text style={styles.statLabel}>C</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>560.82</Text>
-          <Text style={styles.statLabel}>H10</Text>
+          <Text style={styles.statValue}>{userInfo.userCreatedAt}</Text>
+          <Text style={styles.statLabel}>{t("profile")} {t("created")}</Text>
         </View>
       </View>
 
       <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Profili Düzenle</Text>
+        <Text style={styles.buttonText}>{t("profile")} {t("edit")}</Text>
       </TouchableOpacity>
 
       <Button
@@ -120,7 +126,6 @@ const ProfileScreen: React.FC = () => {
       >
         {t("logout")}
       </Button>
-
     </View>
   );
 };
@@ -131,20 +136,14 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   header: {
     alignItems: 'center',
     marginBottom: 30,
-  },
-  avatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    overflow: 'hidden',
-    marginBottom: 15,
-  },
-  avatar: {
-    width: '100%',
-    height: '100%',
   },
   username: {
     fontSize: 24,
@@ -188,7 +187,7 @@ const styles = StyleSheet.create({
   },
   transactionRed: {
     marginTop: 15,
-    backgroundColor: '#FF6347', // Add red color to the logout button
+    backgroundColor: '#FF6347',
   }
 });
 

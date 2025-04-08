@@ -2,7 +2,7 @@ export default {
   home: "Ana Sayfa",
   chat: "Sohbet",
   coin: "WM",
-  name: "Worl Money",
+  name: "World Money",
   language: "Dil",
   currentLanguage: "TR",
   title: "WM Dünya Paraları",
@@ -12,7 +12,6 @@ export default {
   miningInProgress: "Kazım yapıldı, lütfen bekleyin",
   currentPage: "Mevcut Sayfa",
   settings: "Ayarlar",
-  profile: "Profil",
   blog: "Blog",
   transaction: {
     deposit: "Para Yatırma",
@@ -37,5 +36,10 @@ export default {
   passwordConfirm: "Şifre Onayla",
   "dontHaveAccount": "Hesabın yok mu?",
   "registerNow": "Kayıt ol",
-  "alreadyHaveAccount": "Already have an account? Login"
+  "alreadyHaveAccount": "Zaten hesabınız var mı? Giriş yap",
+  "commingsoon": "Yakında burada",
+  edit: "Düzenle",
+  created: "Oluşturuldu",
+  "profile": "Profil",
+  logout: "Çıkış Yap",
 };

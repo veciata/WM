@@ -11,7 +11,6 @@ export default {
   miningInProgress: "Mining in progress, please wait",
   currentPage: "Current Page",
   settings: "Settings",
-  profile: "Profile",
   blog: "Blog",
   transaction: {
     deposit: "Deposit",
@@ -36,5 +35,12 @@ export default {
   passwordConfirm: "Password Confirmation",
   "dontHaveAccount": "Don't have an account?",
   "registerNow": "Register Now",
-  "alreadyHaveAccount": "Already have an account? Login"
+  "alreadyHaveAccount": "Already have an account? Login",
+  "commingsoon": "Comming Soon",
+  profile: {
+    index: "Profile",
+    edit: "Edit",
+    created: "Created",
+  },
+  logout: "Logout",
 };
