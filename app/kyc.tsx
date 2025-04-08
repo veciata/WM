@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image 
 import { Picker } from '@react-native-picker/picker';
 import { useLocalization } from '@localization/i18n';
 import * as ImagePicker from 'expo-image-picker';
+import LivenessTest from '@components/LivenessTest';
 
 const countries = [
   { code: 'TR', name: 'Türkiye', idType: 'TC Kimlik No', idLength: 11 },
@@ -69,7 +70,7 @@ const KYCScreen: React.FC = () => {
         return (
           <View style={styles.stepContainer}>
             <Text style={styles.stepTitle}>Adım 1: Kimlik Bilgileri</Text>
-            
+
             <Text style={styles.label}>Ülke</Text>
             <View style={styles.pickerContainer}>
               <Picker
@@ -160,20 +161,33 @@ const KYCScreen: React.FC = () => {
               )}
             </TouchableOpacity>
 
-            <Text style={styles.label}>Selfie</Text>
-            <TouchableOpacity style={styles.imageUploadButton} onPress={() => pickImage('selfie')}>
-              {formData.selfieImage ? (
+            <Text style={styles.label}>Selfie (Canlılık Testi)</Text>
+            <LivenessTest
+              onSuccess={(imageUri) => {
+                setFormData(prev => ({ ...prev, selfieImage: imageUri }));
+              }}
+              onError={(error) => {
+                console.error("Liveness test failed:", error);
+                // You might want to show an error message to the user
+              }}
+            />
+
+            {/* Show the captured selfie if available */}
+            {formData.selfieImage && (
+              <View style={styles.imageUploadButton}>
                 <Image source={{ uri: formData.selfieImage }} style={styles.previewImage} />
-              ) : (
-                <Text style={styles.uploadText}>Fotoğraf Yükle</Text>
-              )}
-            </TouchableOpacity>
+              </View>
+            )}
 
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={[styles.button, styles.backButton]} onPress={handleBack}>
                 <Text style={styles.buttonText}>Geri</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.button, styles.submitButton]} onPress={handleSubmit}>
+              <TouchableOpacity
+                style={[styles.button, styles.submitButton]}
+                onPress={handleSubmit}
+                disabled={!formData.selfieImage} // Disable if no selfie
+              >
                 <Text style={styles.buttonText}>Onayla ve Gönder</Text>
               </TouchableOpacity>
             </View>
