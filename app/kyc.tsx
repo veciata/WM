@@ -164,11 +164,15 @@ const KYCScreen: React.FC = () => {
             <Text style={styles.label}>Selfie (Canlılık Testi)</Text>
             <LivenessTest
               onSuccess={(imageUri) => {
-                setFormData(prev => ({ ...prev, selfieImage: imageUri }));
+                setFormData(prev => ({
+                  ...prev,
+                  selfieImage: imageUri
+                }));
+                Alert.alert('Basarılı', 'Canlılık testiniz başarıyla tamamlandı.');
               }}
               onError={(error) => {
-                console.error("Liveness test failed:", error);
-                // You might want to show an error message to the user
+                console.error("Liveness test hatası:", error);
+                Alert.alert('Hata', error.message);
               }}
             />
 

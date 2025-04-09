@@ -1,8 +1,10 @@
+// LivenessTest.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision-camera';
 import { runOnJS } from 'react-native-reanimated';
 import { scanFaces } from 'react-native-vision-camera-face-detector';
+import styles from '@styles/LivenessStyles'; // Import styles
 
 const { width, height } = Dimensions.get('window');
 
@@ -12,7 +14,7 @@ const steps = [
   'Başınızı sola çevirin'
 ];
 
-const LivenessTest = () => {
+const LivenessTest = ({ onSuccess, onError }) => {
   const [visible, setVisible] = useState(false);
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -36,6 +38,7 @@ const LivenessTest = () => {
       setErrorMessage(`Kamera hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
       setHasError(true);
       setPermissionGranted(false);
+      onError(error);
     }
   };
 
@@ -54,6 +57,14 @@ const LivenessTest = () => {
       if (stepIndex === 1) setStepIndex(2);
     } else if (yawAngle > 35) {
       if (stepIndex === 0) setStepIndex(1);
+    }
+
+    if (stepIndex === 2) {
+      if (camera.current) {
+        camera.current.takePhoto().then((photo) => {
+          onSuccess(photo.uri);
+        });
+      }
     }
   };
 
@@ -74,11 +85,17 @@ const LivenessTest = () => {
     setErrorMessage('');
   };
 
-  if (!frontDevice) return null;
+  if (!frontDevice) {
+    return (
+      <>
+        <Text style={styles.errorText}>Can't find Camera</Text>
+      </>
+    );
+  }
 
   return (
     <>
-      {!visible && (
+      {visible && (
         <TouchableOpacity
           style={styles.launchButton}
           onPress={() => setVisible(true)}
@@ -129,69 +146,5 @@ const LivenessTest = () => {
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  fullScreen: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width,
-    height,
-    backgroundColor: '#000',
-    zIndex: 999,
-  },
-  overlay: {
-    position: 'absolute',
-    bottom: 40,
-    width: '100%',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  instruction: {
-    color: '#fff',
-    fontSize: 20,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  launchButton: {
-    padding: 15,
-    backgroundColor: '#007AFF',
-    borderRadius: 8,
-    alignSelf: 'center',
-    marginTop: 40,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    padding: 15,
-    backgroundColor: '#FF3B30',
-    borderRadius: 8,
-  },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  errorText: {
-    color: '#FF3B30',
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  permissionText: {
-    color: '#fff',
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  permissionButton: {
-    padding: 15,
-    backgroundColor: '#34C759',
-    borderRadius: 8,
-  },
-});
 
 export default LivenessTest;
