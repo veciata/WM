@@ -3,9 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { useLocalization } from "@localization/i18n";
 import { useRouter } from "expo-router";
@@ -20,53 +21,45 @@ interface BlogPost {
   content: string;
 }
 
-const localBlogPosts: BlogPost[] = [
-  {
-    id: 1,
-    title: "WM Coin Nedir?",
-    excerpt:
-      "WM Coin, dünya çapında kullanılan yeni nesil bir kripto para birimidir...",
-    image: "https://via.placeholder.com/300x200",
-    date: "15 Mart 2024",
-    tags: ["Kripto", "WM Coin", "Başlangıç"],
-    content:
-      "WM Coin, dünya çapında kullanılan yeni nesil bir kripto para birimidir. Güvenli, hızlı ve kullanıcı dostu özellikleriyle öne çıkan WM Coin, modern finans sisteminin vazgeçilmez bir parçası haline gelmiştir...",
-  },
-];
-
 const BlogScreen = () => {
   const { t } = useLocalization();
   const router = useRouter();
-  const [remoteBlogPosts, setRemoteBlogPosts] = React.useState<
-    BlogPost[] | null
-  >(null);
+  const [posts, setPosts] = React.useState<BlogPost[]>([]);
+  const [page, setPage] = React.useState(1);
+  const [loading, setLoading] = React.useState(false);
+  const [hasMore, setHasMore] = React.useState(true);
+
+  const fetchBlogPosts = async (pageToFetch: number) => {
+    if (loading || !hasMore) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `https://www.api.world-moneys.com/public/blogs?page=${pageToFetch}`,
+      );
+      const json = await response.json();
+
+      const transformed = json.data.map((post: any) => ({
+        id: post.id,
+        title: post.title,
+        excerpt: post.desc,
+        image: post.photo.replace(/\\/g, ""),
+        date: new Date(post.created_at).toLocaleDateString("tr-TR"),
+        tags: JSON.parse(post.tag),
+        content: post.desc,
+      }));
+
+      setPosts((prev) => [...prev, ...transformed]);
+      setPage(json.current_page + 1);
+      setHasMore(json.next_page_url !== null);
+    } catch (err) {
+      console.error("Failed to load posts", err);
+    }
+    setLoading(false);
+  };
 
   React.useEffect(() => {
-    const fetchBlogPosts = async () => {
-      try {
-        const response = await fetch(
-          "https://www.api.world-moneys.com/public/blogs",
-        );
-        const data = await response.json();
-
-        // Transform the remote data to match our BlogPost interface
-        const transformedPosts: BlogPost[] = data.data.map((post: any) => ({
-          id: post.id,
-          title: post.title,
-          excerpt: post.desc,
-          image: post.photo.replace(/\\/g, ""),
-          date: new Date(post.created_at).toLocaleDateString("tr-TR"),
-          tags: JSON.parse(post.tag),
-          content: post.detail,
-        }));
-
-        setRemoteBlogPosts(transformedPosts);
-      } catch (error) {
-        console.error("Failed to fetch blog posts:", error);
-      }
-    };
-
-    fetchBlogPosts();
+    fetchBlogPosts(1);
   }, []);
 
   const handlePostPress = (post: BlogPost) => {
@@ -76,49 +69,49 @@ const BlogScreen = () => {
     });
   };
 
-  return (
-    <ScrollView style={styles.container}>
-      {(remoteBlogPosts ?? localBlogPosts).map((post) => (
-        <TouchableOpacity
-          key={post.id}
-          style={styles.postCard}
-          onPress={() => handlePostPress(post)}
-        >
-          <Image source={{ uri: post.image }} style={styles.postImage} />
-          <View style={styles.postContent}>
-            <Text style={styles.postTitle}>{post.title}</Text>
-            <Text style={styles.postExcerpt}>{post.excerpt}</Text>
-            <View style={styles.tagsContainer}>
-              {post.tags.map((tag, index) => (
-                <View key={index} style={styles.tag}>
-                  <Text style={styles.tagText}>{tag}</Text>
-                </View>
-              ))}
+  const renderItem = ({ item }: { item: BlogPost }) => (
+    <TouchableOpacity
+      key={item.id}
+      style={styles.postCard}
+      onPress={() => handlePostPress(item)}
+    >
+      <Image source={{ uri: item.image }} style={styles.postImage} />
+      <View style={styles.postContent}>
+        <Text style={styles.postTitle}>{item.title}</Text>
+        <Text style={styles.postExcerpt}>{item.excerpt}</Text>
+        <View style={styles.tagsContainer}>
+          {item.tags.map((tag, index) => (
+            <View key={index} style={styles.tag}>
+              <Text style={styles.tagText}>{tag}</Text>
             </View>
-            <Text style={styles.postDate}>{post.date}</Text>
-          </View>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+          ))}
+        </View>
+        <Text style={styles.postDate}>{item.date}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <FlatList
+      data={posts}
+      renderItem={renderItem}
+      keyExtractor={(item) => item.id.toString()}
+      contentContainerStyle={styles.container}
+      onEndReached={() => fetchBlogPosts(page)}
+      onEndReachedThreshold={0.5}
+      ListFooterComponent={loading ? <ActivityIndicator size="small" /> : null}
+    />
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    padding: 20,
-    color: "#000",
   },
   postCard: {
     margin: 15,
     backgroundColor: "#fff",
     borderRadius: 10,
-    boxShadow: "0px 2px 3.84px rgba(0, 0, 0, 0.25)",
     elevation: 5,
   },
   postImage: {
