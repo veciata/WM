@@ -1,5 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
+import RenderHtml from "react-native-render-html";
 
 const WhitepaperPage = () => {
   const [whitepaperContent, setWhitepaperContent] = useState(null);
@@ -7,17 +14,15 @@ const WhitepaperPage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // API'den veri çekme
-    fetch('https://www.api.world-moneys.com/public/content/whitepaper') // URL'yi doğru şekilde ekleyin
-      .then(response => response.json())
-      .then(data => {
+    fetch("https://www.api.world-moneys.com/public/content/whitepaper")
+      .then((response) => response.json())
+      .then((data) => {
         if (data && data.content) {
-          // 'content' string'ini JSON olarak çözümleyelim
           const parsedContent = JSON.parse(data.content);
-          setWhitepaperContent(parsedContent.content); // Ana içeriği al
+          setWhitepaperContent(parsedContent.content);
         }
       })
-      .catch(err => setError('Veri çekilirken bir hata oluştu.'))
+      .catch((err) => setError("Veri çekilirken bir hata oluştu."))
       .finally(() => setLoading(false));
   }, []);
 
@@ -39,7 +44,7 @@ const WhitepaperPage = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.contentText}>{whitepaperContent}</Text>
+      <RenderHtml contentWidth={1000} source={{ html: whitepaperContent }} />
     </ScrollView>
   );
 };
@@ -48,15 +53,10 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
   },
-  contentText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#333',
-  },
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

@@ -10,14 +10,14 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.wm",
+      "bundleIdentifier": "com.yourcompany.wm"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.yourcompany.wm",
+      "package": "com.yourcompany.wm"
     },
     "web": {
       "bundler": "metro",
@@ -34,14 +34,12 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-build-properties"
     ],
     "experiments": {
       "typedRoutes": true
     },
-    "assetBundlePatterns": [
-      "**/*",
-      "./assets/wm-logo.png"
-    ]
+    "assetBundlePatterns": ["**/*", "./assets/wm-logo.png"]
   }
 }

@@ -1,17 +1,27 @@
 // LivenessTest.tsx
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision-camera';
-import { runOnJS } from 'react-native-reanimated';
-import { scanFaces } from 'react-native-vision-camera-face-detector';
-import styles from '@styles/LivenessStyles'; // Import styles
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+} from "react-native";
+import {
+  Camera,
+  useCameraDevices,
+  useFrameProcessor,
+} from "react-native-vision-camera";
+import { runOnJS } from "react-native-reanimated";
+import { scanFaces } from "react-native-vision-camera-face-detector";
+import styles from "@styles/LivenessStyles";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 const steps = [
-  'Kameraya bakın',
-  'Başınızı sağa çevirin',
-  'Başınızı sola çevirin'
+  "Kameraya bakın",
+  "Başınızı sağa çevirin",
+  "Başınızı sola çevirin",
 ];
 
 const LivenessTest = ({ onSuccess, onError }) => {
@@ -19,7 +29,7 @@ const LivenessTest = ({ onSuccess, onError }) => {
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
   const camera = useRef<Camera>(null);
 
   const devices = useCameraDevices();
@@ -28,14 +38,16 @@ const LivenessTest = ({ onSuccess, onError }) => {
   const requestPermissions = async () => {
     try {
       const cameraPermission = await Camera.requestCameraPermission();
-      setPermissionGranted(cameraPermission === 'granted');
+      setPermissionGranted(cameraPermission === "granted");
 
-      if (cameraPermission !== 'granted') {
+      if (cameraPermission !== "granted") {
         setErrorMessage("Kamera izni verilmedi");
         setHasError(true);
       }
     } catch (error) {
-      setErrorMessage(`Kamera hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
+      setErrorMessage(
+        `Kamera hatası: ${error instanceof Error ? error.message : "Bilinmeyen hata"}`,
+      );
       setHasError(true);
       setPermissionGranted(false);
       onError(error);
@@ -68,21 +80,24 @@ const LivenessTest = ({ onSuccess, onError }) => {
     }
   };
 
-  const frameProcessor = useFrameProcessor((frame) => {
-    'worklet';
-    try {
-      const faces = scanFaces(frame);
-      if (faces.length > 0) {
-        runOnJS(onFaceDetected)(faces[0]);
-      }
-    } catch { }
-  }, [stepIndex]);
+  const frameProcessor = useFrameProcessor(
+    (frame) => {
+      "worklet";
+      try {
+        const faces = scanFaces(frame);
+        if (faces.length > 0) {
+          runOnJS(onFaceDetected)(faces[0]);
+        }
+      } catch {}
+    },
+    [stepIndex],
+  );
 
   const closeModal = () => {
     setVisible(false);
     setStepIndex(0);
     setHasError(false);
-    setErrorMessage('');
+    setErrorMessage("");
   };
 
   if (!frontDevice) {
@@ -109,7 +124,7 @@ const LivenessTest = ({ onSuccess, onError }) => {
           {hasError ? (
             <View style={styles.center}>
               <Text style={styles.errorText}>
-                {errorMessage || 'Kamera ile ilgili bir hata oluştu'}
+                {errorMessage || "Kamera ile ilgili bir hata oluştu"}
               </Text>
             </View>
           ) : permissionGranted ? (
@@ -123,9 +138,7 @@ const LivenessTest = ({ onSuccess, onError }) => {
             />
           ) : (
             <View style={styles.center}>
-              <Text style={styles.permissionText}>
-                Kamera izni gerekiyor
-              </Text>
+              <Text style={styles.permissionText}>Kamera izni gerekiyor</Text>
               <TouchableOpacity
                 style={styles.permissionButton}
                 onPress={requestPermissions}
