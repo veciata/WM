@@ -1,18 +1,28 @@
-import { Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AdMobRewarded, setTestDeviceIDAsync } from "expo-ads-admob";
 
 interface AdResponse {
   success: boolean;
   message: string;
 }
 
+const REWARDED_AD_UNIT_ID = __DEV__
+  ? Platform.select({
+      ios: "ca-app-pub-3940256099942544/1712485313",
+      android: "ca-app-pub-3940256099942544/5224354917",
+    })
+  : Platform.select({
+      ios: "YOUR_IOS_REWARDED_AD_ID",
+      android: "YOUR_ANDROID_REWARDED_AD_ID",
+    });
+
 class AdsService {
   private static instance: AdsService;
   private isAdServiceAvailable: boolean = false;
-  private readonly API_URL = 'https://www.api.world-moneys.com/public/api';
+  private readonly API_URL = "https://www.api.world-moneys.com/public/api";
 
   private constructor() {
-    // Initialize ad service availability check
     this.checkAdServiceAvailability();
   }
 
@@ -23,18 +33,15 @@ class AdsService {
     return AdsService.instance;
   }
 
-  // Initialize Ads service
   public async init(): Promise<void> {
+    await setTestDeviceIDAsync("EMULATOR");
     await this.checkAdServiceAvailability();
   }
 
   private async checkAdServiceAvailability(): Promise<void> {
     try {
-      // Here you would typically check if Google Ads SDK is available
-      // This is a placeholder - replace with actual Google Ads SDK check
-      this.isAdServiceAvailable = Platform.OS !== 'web';
-    } catch (error) {
-      console.error('Error checking ad service availability:', error);
+      this.isAdServiceAvailable = Platform.OS !== "web";
+    } catch {
       this.isAdServiceAvailable = false;
     }
   }
@@ -45,60 +52,69 @@ class AdsService {
 
   public async showRewardedAd(): Promise<boolean> {
     if (!this.isAdServiceAvailable) {
-      console.error('Ad service is not available.');
       return false;
     }
 
     try {
-      // Here you would implement the actual Google Ads rewarded video logic
-      // This is a placeholder - replace with actual Google Ads implementation
+      await AdMobRewarded.setAdUnitID(REWARDED_AD_UNIT_ID!);
+      await AdMobRewarded.requestAdAsync({ servePersonalizedAds: true });
+
       return new Promise((resolve) => {
-        // Simulating ad watch completion
-        setTimeout(() => {
+        const onReward = () => {
+          AdMobRewarded.removeAllListeners();
           resolve(true);
-        }, 1000);
+        };
+
+        const onClose = () => {
+          AdMobRewarded.removeAllListeners();
+          resolve(false);
+        };
+
+        AdMobRewarded.addEventListener(
+          "rewardedVideoUserDidEarnReward",
+          onReward,
+        );
+        AdMobRewarded.addEventListener("rewardedVideoDidDismiss", onClose);
+
+        AdMobRewarded.showAdAsync();
       });
-    } catch (error) {
-      console.error('Error showing rewarded ad:', error);
+    } catch {
       return false;
     }
   }
 
   public async notifyAdCompletion(userId: string): Promise<AdResponse> {
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
       if (!token) {
-        console.error('No token found in AsyncStorage');
         return {
           success: false,
-          message: 'Token bulunamadı.',
+          message: "Token bulunamadı.",
         };
       }
 
       const response = await fetch(`${this.API_URL}/mining/ad-completed`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          user_id: userId, // updated to snake_case
+          user_id: userId,
           platform: Platform.OS,
           timestamp: new Date().toISOString(),
         }),
       });
 
       if (!response.ok) {
-        console.error('Network response was not ok');
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
 
       return await response.json();
-    } catch (error) {
-      console.error('Error notifying ad completion:', error);
+    } catch {
       return {
         success: false,
-        message: 'Reklam tamamlama bildirimi gönderilemedi.',
+        message: "Reklam tamamlama bildirimi gönderilemedi.",
       };
     }
   }
