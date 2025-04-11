@@ -18,8 +18,7 @@ const WhitepaperPage = () => {
       .then((response) => response.json())
       .then((data) => {
         if (data && data.content) {
-          const parsedContent = JSON.parse(data.content);
-          setWhitepaperContent(parsedContent.content);
+          setWhitepaperContent(data.content); // directly set the HTML content
         }
       })
       .catch((err) => setError("Veri çekilirken bir hata oluştu."))

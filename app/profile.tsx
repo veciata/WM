@@ -10,7 +10,7 @@ import {
   Linking,
   ScrollView,
 } from "react-native";
-import { useLocalization } from "@localization/i18n";
+import * as Localization from "@localization/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { MaterialIcons, FontAwesome, Feather } from "@expo/vector-icons";
@@ -18,7 +18,7 @@ import * as ImagePicker from "expo-image-picker";
 import { UserService } from "@/components/services/user";
 
 interface UserInfo {
-  firstName: string;
+  name: string;
   lastName: string;
   userEmail: string;
   userBalance: number;
@@ -30,17 +30,8 @@ interface UserInfo {
   isEmailVerified: boolean;
 }
 
-const formatDate = (dateString: string) => {
-  const options: Intl.DateTimeFormatOptions = {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  };
-  return new Date(dateString).toLocaleDateString(undefined, options);
-};
-
 const ProfileScreen: React.FC = () => {
-  const { t } = useLocalization();
+  const { t, currentLanguage } = Localization.useLocalization();
   const router = useRouter();
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -62,8 +53,8 @@ const ProfileScreen: React.FC = () => {
         }
 
         setUserInfo({
-          firstName: userData.first_name || t("profile.default_first_name"),
-          lastName: userData.last_name || t("profile.default_last_name"),
+          name: userData.name || t("profile.default_first_name"),
+          lastName: userData.lastName || t("profile.default_last_name"),
           userEmail: userData.email || t("profile.default_email"),
           userBalance: userData.balance || 0,
           userCreatedAt: formatDate(userData.created_at),
@@ -88,6 +79,31 @@ const ProfileScreen: React.FC = () => {
     fetchUserInfo();
   }, []);
 
+  const formatDate = (dateString: string) => {
+    const localeMap: { [key: string]: string } = {
+      en: "en-US",
+      tr: "tr-TR",
+      fr: "fr-FR",
+      de: "de-DE",
+      es: "es-ES",
+    };
+
+    const locale = localeMap[currentLanguage] || "en-US";
+
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    };
+
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.error("Geçersiz tarih formatı");
+      return "";
+    }
+
+    return date.toLocaleDateString(locale, options);
+  };
   const logout = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -134,7 +150,7 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  const inviteLink = `world-money.com/invate/@${userInfo?.firstName?.toLowerCase()}${userInfo?.lastName?.toLowerCase()}`;
+  const inviteLink = `world-money.com/invate/@${userInfo?.name?.toLowerCase()}${userInfo?.lastName?.toLowerCase()}`;
 
   const handlePushNotificationsPermission = () => {
     // Add logic to request push notification permissions here
@@ -178,7 +194,7 @@ const ProfileScreen: React.FC = () => {
         {/* </TouchableOpacity> */}
 
         <Text style={styles.username}>
-          {userInfo.firstName} {userInfo.lastName}
+          {userInfo.name} {userInfo.lastName}
         </Text>
         <Text style={styles.email}>{userInfo.userEmail}</Text>
 
@@ -186,14 +202,13 @@ const ProfileScreen: React.FC = () => {
           style={styles.inviteContainer}
           onPress={() => Linking.openURL(`https://${inviteLink}`)}
         >
-          <Text style={styles.inviteLink}>{inviteLink}</Text>
+          <Text style={styles.inviteLink}>{t("inviteLink")}</Text>
           <MaterialIcons name="content-copy" size={18} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
       {/* Balance Card */}
       <View style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>{t("your_balance")}</Text>
         <Text style={styles.balanceValue}>{userInfo.userBalance} WM</Text>
       </View>
 
@@ -207,7 +222,7 @@ const ProfileScreen: React.FC = () => {
             color={colors.textSecondary}
           />
           <Text style={styles.infoText}>
-            {userInfo.firstName} {userInfo.lastName}
+            {userInfo.name} {userInfo.lastName}
           </Text>
         </View>
         <View style={styles.infoItem}>
@@ -571,7 +586,7 @@ const styles = StyleSheet.create({
   balanceValue: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#fff",
+    color: "#daba71",
   },
   section: {
     backgroundColor: colors.background,
