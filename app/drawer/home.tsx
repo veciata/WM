@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
+import { Link, useNavigation } from "expo-router";
 import { Button } from "react-native-paper";
 import styles from "@styles/LandingPageStyles";
 import { useLocalization } from "@localization/i18n";
@@ -18,13 +19,13 @@ import { useBackgroundTasks } from "@hooks/useBackgroundTasks";
 const Home: React.FC = () => {
   const { t } = useLocalization();
   const router = useRouter();
+  const navigation = useNavigation();
   const [isMiningDisabled, setIsMiningDisabled] = useState(false);
   const [remainingTime, setRemainingTime] = useState("");
   const [userId, setUserId] = useState("");
   const [userBalance, setUserBalance] = useState("0");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Initialize background tasks
   useBackgroundTasks();
 
   useEffect(() => {
@@ -34,12 +35,10 @@ const Home: React.FC = () => {
         router.replace("/auth/login");
         return;
       }
-
       setUserId(user.id.toString());
       setUserBalance(user.balance);
       await checkMiningStatus();
     };
-
     initializeApp();
   }, []);
 
@@ -52,22 +51,9 @@ const Home: React.FC = () => {
   const handleStartMining = async () => {
     Alert.alert("Hata", "İnternet bağlantınız yok veya reklam bulunamadı.");
   };
-  // const handleStartMining = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     await MiningService.startMining(userId);
-  //     const userData = await UserService.fetchUserData();
-  //     if (userData) setUserBalance(userData.balance);
-  //     await checkMiningStatus();
-  //   } catch (error) {
-  //     console.error("Mining error:", error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const handleTransactionHistory = () => {
-    router.push("/drawer/transaction-history");
+    navigation.navigate("TransactionHistory");
   };
 
   return (
@@ -76,13 +62,11 @@ const Home: React.FC = () => {
         source={require("@/assets/images/WM-logo.png")}
         style={styles.logo}
       />
-
       <View style={styles.balanceContainer}>
         <Text style={styles.balanceAmount}>
           {userBalance} {t("coin") ?? "WM"}
         </Text>
       </View>
-
       <Button
         mode="contained"
         style={[styles.miningButton, isMiningDisabled && styles.disabledButton]}
@@ -97,20 +81,23 @@ const Home: React.FC = () => {
           t("startMining")
         )}
       </Button>
-
       {isMiningDisabled && remainingTime && (
         <Text style={styles.cooldownText}>
           {t("cooldownRemaining")}: {remainingTime}
         </Text>
       )}
-
-      <Button
-        mode="contained"
-        style={styles.transactionRed}
-        onPress={handleTransactionHistory}
-      >
-        {t("transactionHistory")}
+      <Button mode="contained" style={styles.transactionRed}>
+        <Link href="/drawer/transaction-history">
+          {t("transactionHistory")}
+        </Link>
       </Button>
+      {/* <Button */}
+      {/*   mode="contained" */}
+      {/*   style={styles.transactionRed} */}
+      {/*   onPress={handleTransactionHistory} */}
+      {/* > */}
+      {/*   {t("transactionHistory")} */}
+      {/* </Button> */}
     </View>
   );
 };

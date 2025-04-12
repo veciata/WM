@@ -24,6 +24,9 @@ import Kyc from "./kyc";
 import Profile from "./profile";
 import LoginScreen from "./auth/login";
 import RegisterScreen from "./auth/register";
+import TransactionHistoryScreen from "./drawer/transaction-history";
+import SettingsScreen from "./settings";
+import PasswordUpdateScreen from "./password-update";
 import {
   Ionicons,
   FontAwesome,
@@ -144,7 +147,7 @@ const CustomDrawerContent = (props: any) => {
   );
 };
 
-const MainApp = () => {
+const DrawerScreens = () => {
   const { t } = useLocalization();
 
   return (
@@ -232,6 +235,24 @@ const MainApp = () => {
   );
 };
 
+const MainStack = createStackNavigator();
+
+const MainApp = () => {
+  return (
+    <MainStack.Navigator screenOptions={{ headerShown: false }}>
+      <MainStack.Screen name="Home" component={DrawerScreens} />
+      <MainStack.Screen
+        name="TransactionHistory"
+        component={TransactionHistoryScreen}
+      />
+      <MainStack.Screen name="Settings" component={SettingsScreen} />
+      <MainStack.Screen
+        name="PasswordUpdate"
+        component={PasswordUpdateScreen}
+      />
+    </MainStack.Navigator>
+  );
+};
 const AuthStack = () => {
   const { t } = useLocalization();
 

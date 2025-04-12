@@ -9,13 +9,17 @@ import {
   Image,
   Linking,
   ScrollView,
+  Platform,
+  Alert,
 } from "react-native";
 import * as Localization from "@localization/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons, FontAwesome, Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { UserService } from "@/components/services/user";
+import * as Notifications from "expo-notifications";
 
 interface UserInfo {
   name: string;
@@ -33,9 +37,13 @@ interface UserInfo {
 const ProfileScreen: React.FC = () => {
   const { t, currentLanguage } = Localization.useLocalization();
   const router = useRouter();
+  const navigation = useNavigation();
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [notificationStatus, setNotificationStatus] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -68,6 +76,10 @@ const ProfileScreen: React.FC = () => {
         if (userData.profile_picture) {
           setProfileImage(userData.profile_picture);
         }
+
+        // Check notification permission status
+        const { status } = await Notifications.getPermissionsAsync();
+        setNotificationStatus(status);
       } catch (error) {
         console.error("Error fetching user info:", error);
         router.replace("/auth/login");
@@ -98,12 +110,13 @@ const ProfileScreen: React.FC = () => {
 
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
-      console.error("Geçersiz tarih formatı");
+      console.error("Invalid date format");
       return "";
     }
 
     return date.toLocaleDateString(locale, options);
   };
+
   const logout = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -150,14 +163,59 @@ const ProfileScreen: React.FC = () => {
     }
   };
 
-  const inviteLink = `world-money.com/invate/@${userInfo?.name?.toLowerCase()}${userInfo?.lastName?.toLowerCase()}`;
+  const handlePushNotificationsPermission = async (): Promise<void> => {
+    try {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
 
-  const handlePushNotificationsPermission = () => {
-    // Add logic to request push notification permissions here
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+        setNotificationStatus(status);
+      }
+
+      if (finalStatus !== "granted") {
+        Alert.alert(
+          t("notification_permission_required"),
+          t("notification_permission_message"),
+        );
+        return;
+      }
+
+      if (Platform.OS === "android") {
+        await Notifications.setNotificationChannelAsync("default", {
+          name: "default",
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: "#FF231F7C",
+        });
+      }
+
+      const token = (await Notifications.getExpoPushTokenAsync()).data;
+      console.log("Push token:", token);
+      // You would typically send this token to your backend server
+    } catch (error) {
+      console.error("Error getting push notification permission:", error);
+    }
   };
 
   const handleAccountDeletion = async () => {
     // Add logic to delete the account
+    Alert.alert(t("delete_account_title"), t("delete_account_message"), [
+      {
+        text: t("cancel"),
+        style: "cancel",
+      },
+      {
+        text: t("delete"),
+        onPress: async () => {
+          // Implement actual deletion logic
+          console.log("Account deletion requested");
+        },
+        style: "destructive",
+      },
+    ]);
   };
 
   if (loading || !userInfo) {
@@ -168,6 +226,8 @@ const ProfileScreen: React.FC = () => {
     );
   }
 
+  const inviteLink = `world-money.com/invate/@${userInfo?.name?.toLowerCase()}${userInfo?.lastName?.toLowerCase()}`;
+
   return (
     <ScrollView
       style={styles.container}
@@ -175,23 +235,23 @@ const ProfileScreen: React.FC = () => {
     >
       {/* Profile Header */}
       <View style={styles.header}>
-        {/* <TouchableOpacity onPress={pickImage}> */}
-        {/*   <View style={styles.profileImageContainer}> */}
-        {/*     {profileImage ? ( */}
-        {/*       <Image */}
-        {/*         source={{ uri: profileImage }} */}
-        {/*         style={styles.profileImage} */}
-        {/*       /> */}
-        {/*     ) : ( */}
-        {/*       <View style={styles.profileImagePlaceholder}> */}
-        {/*         <MaterialIcons name="person" size={40} color="#fff" /> */}
-        {/*       </View> */}
-        {/*     )} */}
-        {/*     <View style={styles.editIcon}> */}
-        {/*       <Feather name="edit" size={16} color="#fff" /> */}
-        {/*     </View> */}
-        {/*   </View> */}
-        {/* </TouchableOpacity> */}
+        <TouchableOpacity onPress={pickImage}>
+          <View style={styles.profileImageContainer}>
+            {profileImage ? (
+              <Image
+                source={{ uri: profileImage }}
+                style={styles.profileImage}
+              />
+            ) : (
+              <View style={styles.profileImagePlaceholder}>
+                <MaterialIcons name="person" size={40} color="#fff" />
+              </View>
+            )}
+            <View style={styles.editIcon}>
+              <Feather name="edit" size={16} color="#fff" />
+            </View>
+          </View>
+        </TouchableOpacity>
 
         <Text style={styles.username}>
           {userInfo.name} {userInfo.lastName}
@@ -402,7 +462,7 @@ const ProfileScreen: React.FC = () => {
         <Text style={styles.sectionTitle}>{t("actions")}</Text>
         <TouchableOpacity
           style={styles.actionItem}
-          onPress={() => router.push("/settings")}
+          onPress={() => navigation.navigate("Settings")}
         >
           <MaterialIcons
             name="settings"
@@ -418,7 +478,7 @@ const ProfileScreen: React.FC = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.actionItem}
-          onPress={() => router.push("/password-update")}
+          onPress={() => navigation.navigate("PasswordUpdate")}
         >
           <MaterialIcons name="lock" size={20} color={colors.textSecondary} />
           <Text style={styles.actionText}>{t("update_password")}</Text>
@@ -438,11 +498,19 @@ const ProfileScreen: React.FC = () => {
             color={colors.textSecondary}
           />
           <Text style={styles.actionText}>{t("notification_settings")}</Text>
-          <MaterialIcons
-            name="chevron-right"
-            size={20}
-            color={colors.textSecondary}
-          />
+          {notificationStatus === "granted" ? (
+            <MaterialIcons
+              name="check-circle"
+              size={20}
+              color={colors.success}
+            />
+          ) : (
+            <MaterialIcons
+              name="error-outline"
+              size={20}
+              color={colors.warning}
+            />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -477,7 +545,7 @@ const ProfileScreen: React.FC = () => {
 };
 
 const colors = {
-  primary: "#3d6a70", // Updated primary color
+  primary: "#3d6a70",
   secondary: "#f8f9fa",
   text: "#333",
   textSecondary: "#666",

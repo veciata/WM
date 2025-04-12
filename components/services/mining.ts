@@ -114,5 +114,36 @@ export const MiningService = {
     }
   },
 
-  // ... rest of the service methods remain the same ...
+  async handleCooldownNotification() {
+    try {
+      const today = new Date().toDateString();
+      const lastMiningTime = await AsyncStorage.getItem(
+        `last_mining_time_${today}`,
+      );
+
+      if (lastMiningTime) {
+        const { isCooldownOver } = this.calculateCooldown(lastMiningTime);
+
+        if (isCooldownOver) {
+          await AsyncStorage.setItem(`mining_count_${today}`, "0");
+          await this.sendNotification(
+            "Kazım Süresi Doldu!",
+            "23 saatlik bekleme süreniz doldu. Tekrar kazım yapabilirsiniz!",
+          );
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error("Cooldown notification error:", error);
+      return false;
+    }
+  },
+
+  async sendNotification(title: string, body: string) {
+    await Notifications.scheduleNotificationAsync({
+      content: { title, body },
+      trigger: null,
+    });
+  },
 };

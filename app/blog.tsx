@@ -80,7 +80,7 @@ const BlogScreen = () => {
         <Text style={styles.postTitle}>{item.title}</Text>
         <Text style={styles.postExcerpt}>{item.excerpt}</Text>
         <View style={styles.tagsContainer}>
-          {item.tags.map((tag, index) => (
+          {item.tags?.map((tag, index) => (
             <View key={index} style={styles.tag}>
               <Text style={styles.tagText}>{tag}</Text>
             </View>
