@@ -50,7 +50,7 @@ const LanguageSelector = () => {
   return (
     <View style={{ marginRight: 15 }}>
       <TouchableOpacity onPress={() => setShowDropdown(!showDropdown)}>
-        <Ionicons name="language" size={24} color="white" />
+        <Ionicons name="globe" size={24} color="white" />
       </TouchableOpacity>
 
       {showDropdown && (

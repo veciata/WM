@@ -7,11 +7,15 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
-import { Link, useNavigation } from "expo-router";
 import { Button } from "react-native-paper";
+import {
+  MaterialCommunityIcons,
+  FontAwesome,
+  Feather,
+} from "@expo/vector-icons";
 import styles from "@styles/LandingPageStyles";
 import { useLocalization } from "@localization/i18n";
-import { useRouter } from "expo-router";
+import { useRouter, useNavigation } from "expo-router";
 import { UserService } from "@services/user";
 import { MiningService } from "@services/mining";
 import { useBackgroundTasks } from "@hooks/useBackgroundTasks";
@@ -67,37 +71,43 @@ const Home: React.FC = () => {
           {userBalance} {t("coin") ?? "WM"}
         </Text>
       </View>
+
       <Button
         mode="contained"
         style={[styles.miningButton, isMiningDisabled && styles.disabledButton]}
         onPress={handleStartMining}
         disabled={isMiningDisabled || isLoading}
       >
-        {isLoading ? (
-          <ActivityIndicator color="#fff" size="small" />
-        ) : isMiningDisabled ? (
-          t("miningInProgress")
-        ) : (
-          t("startMining")
-        )}
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <MaterialCommunityIcons name="pickaxe" size={20} color="#fff" />
+          <Text style={{ marginLeft: 8, color: "#fff" }}>
+            {isLoading ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : isMiningDisabled ? (
+              t("miningInProgress")
+            ) : (
+              t("startMining")
+            )}
+          </Text>
+        </View>
       </Button>
+
       {isMiningDisabled && remainingTime && (
-        <Text style={styles.cooldownText}>
-          {t("cooldownRemaining")}: {remainingTime}
-        </Text>
+        <Text style={styles.cooldownText}>{t("cooldownRemaining")}</Text>
       )}
-      <Button mode="contained" style={styles.transactionRed}>
-        <Link href="/drawer/transaction-history">
-          {t("transactionHistory")}
-        </Link>
+
+      <Button
+        mode="contained"
+        style={styles.transactionRed}
+        onPress={handleTransactionHistory}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <FontAwesome name="file-text-o" size={20} color="#fff" />
+          <Text style={{ marginLeft: 8, color: "#fff" }}>
+            {t("transactionHistory")}
+          </Text>
+        </View>
       </Button>
-      {/* <Button */}
-      {/*   mode="contained" */}
-      {/*   style={styles.transactionRed} */}
-      {/*   onPress={handleTransactionHistory} */}
-      {/* > */}
-      {/*   {t("transactionHistory")} */}
-      {/* </Button> */}
     </View>
   );
 };

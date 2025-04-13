@@ -11,6 +11,8 @@ import {
   ScrollView,
   Platform,
   Alert,
+  Modal,
+  TextInput,
 } from "react-native";
 import * as Localization from "@localization/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -44,14 +46,14 @@ const ProfileScreen: React.FC = () => {
   const [notificationStatus, setNotificationStatus] = useState<string | null>(
     null,
   );
+  const [isNicknameModalVisible, setIsNicknameModalVisible] = useState(false);
+  const [nickname, setNickname] = useState("");
+  const [nicknameError, setNicknameError] = useState("");
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        // First try to get fresh data from API
         const freshUserData = await UserService.fetchUserData();
-
-        // If API fails, fall back to stored data
         const userData = freshUserData || (await UserService.getStoredUser());
 
         if (!userData) {
@@ -77,7 +79,6 @@ const ProfileScreen: React.FC = () => {
           setProfileImage(userData.profile_picture);
         }
 
-        // Check notification permission status
         const { status } = await Notifications.getPermissionsAsync();
         setNotificationStatus(status);
       } catch (error) {
@@ -101,7 +102,6 @@ const ProfileScreen: React.FC = () => {
     };
 
     const locale = localeMap[currentLanguage] || "en-US";
-
     const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
       month: "long",
@@ -117,7 +117,7 @@ const ProfileScreen: React.FC = () => {
     return date.toLocaleDateString(locale, options);
   };
 
-  const logout = async () => {
+  const logout = async (nickname?: string) => {
     try {
       const token = await AsyncStorage.getItem("token");
 
@@ -135,6 +135,7 @@ const ProfileScreen: React.FC = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
+          body: nickname ? JSON.stringify({ nickname }) : undefined,
         },
       );
 
@@ -159,7 +160,6 @@ const ProfileScreen: React.FC = () => {
 
     if (!result.canceled) {
       setProfileImage(result.assets[0].uri);
-      // Here you would typically upload the image to your server
     }
   };
 
@@ -194,28 +194,31 @@ const ProfileScreen: React.FC = () => {
 
       const token = (await Notifications.getExpoPushTokenAsync()).data;
       console.log("Push token:", token);
-      // You would typically send this token to your backend server
     } catch (error) {
       console.error("Error getting push notification permission:", error);
     }
   };
 
-  const handleAccountDeletion = async () => {
-    // Add logic to delete the account
-    Alert.alert(t("delete_account_title"), t("delete_account_message"), [
+  const handleAccountDeletion = () => {
+    Alert.alert(t("enter_nickname"), t("nickname_required_message"), [
       {
         text: t("cancel"),
         style: "cancel",
       },
       {
-        text: t("delete"),
-        onPress: async () => {
-          // Implement actual deletion logic
-          console.log("Account deletion requested");
-        },
-        style: "destructive",
+        text: t("confirm"),
+        onPress: () => setIsNicknameModalVisible(true),
       },
     ]);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!nickname.trim() && nickname == "nick") {
+      setNicknameError(t("nickname_error") || "Nickname cannot be empty");
+      return;
+    }
+    await logout(nickname);
+    setIsNicknameModalVisible(false);
   };
 
   if (loading || !userInfo) {
@@ -410,51 +413,6 @@ const ProfileScreen: React.FC = () => {
             )}
           </View>
         </View>
-        <View style={styles.verificationItem}>
-          <MaterialIcons
-            name="facebook"
-            size={20}
-            color={colors.textSecondary}
-          />
-          <Text style={styles.verificationText}>
-            {t("facebook_verification")}
-          </Text>
-          <View style={styles.verificationStatus}>
-            {userInfo.isFacebookVerified ? (
-              <>
-                <MaterialIcons
-                  name="verified"
-                  size={20}
-                  color={colors.success}
-                />
-                <Text
-                  style={[
-                    styles.verificationStatusText,
-                    { color: colors.success },
-                  ]}
-                >
-                  {t("verified")}
-                </Text>
-              </>
-            ) : (
-              <>
-                <MaterialIcons
-                  name="error-outline"
-                  size={20}
-                  color={colors.warning}
-                />
-                <Text
-                  style={[
-                    styles.verificationStatusText,
-                    { color: colors.warning },
-                  ]}
-                >
-                  {t("not_verified")}
-                </Text>
-              </>
-            )}
-          </View>
-        </View>
       </View>
 
       {/* Actions */}
@@ -536,10 +494,61 @@ const ProfileScreen: React.FC = () => {
         mode="contained"
         style={styles.logoutButton}
         labelStyle={styles.logoutButtonText}
-        onPress={logout}
+        onPress={() => logout()}
       >
         {t("logout")}
       </Button>
+
+      {/* Nickname Input Modal */}
+      <Modal
+        visible={isNicknameModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsNicknameModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{t("enter_nickname")}</Text>
+            <Text style={styles.modalMessage}>
+              {t("nickname_required_message")}
+            </Text>
+
+            <TextInput
+              placeholder={
+                t("enter_nickname_placeholder") || "Type your nickname"
+              }
+              value={nickname}
+              onChangeText={(text) => {
+                setNickname(text);
+                setNicknameError("");
+              }}
+              style={[styles.input, nicknameError ? styles.inputError : null]}
+              autoFocus={true}
+              maxLength={40}
+            />
+
+            {nicknameError ? (
+              <Text style={styles.errorText}>{nicknameError}</Text>
+            ) : null}
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setIsNicknameModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={handleDeleteConfirm}
+              >
+                <Text style={styles.confirmButtonText}>{t("confirm")}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -733,6 +742,62 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: colors.background,
+    borderRadius: 10,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalMessage: {
+    fontSize: 14,
+    marginBottom: 15,
+    color: colors.textSecondary,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+  },
+  inputError: {
+    borderColor: colors.danger,
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: 12,
+    marginBottom: 10,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  cancelButton: {
+    padding: 10,
+    marginRight: 10,
+  },
+  cancelButtonText: {
+    color: colors.textSecondary,
+  },
+  confirmButton: {
+    padding: 10,
+    backgroundColor: colors.primary,
+    borderRadius: 5,
+  },
+  confirmButtonText: {
+    color: colors.background,
   },
 });
 

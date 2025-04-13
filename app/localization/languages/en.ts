@@ -57,6 +57,9 @@ export default {
   logout: "Logout",
   Home: "Home",
   Chat: "Chat",
+  notification_permission_required: "Notification permission is required",
+  notification_permission_message:
+    "Please enable notifications in your settings to stay updated.",
   Whitepaper: "Whitepaper",
   Faq: "FAQ",
   Blog: "Blog",
@@ -65,6 +68,14 @@ export default {
   "Follow us on social media": "Follow us on social media",
   Welcome: "Welcome",
   Settings: "Settings",
+  enter_nickname: "Enter Nickname",
+  nickname_required_message:
+    "Please enter your nickname to confirm account deletion.",
+  nickname_error: "Nickname cannot be empty",
+
+  enter_nickname_placeholder: "Type your nickname",
+  cancel: "Cancel",
+  confirm: "Confirm",
   Cancel: "Cancel",
   Submit: "Submit",
   Loading: "Loading...",

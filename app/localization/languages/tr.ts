@@ -53,6 +53,10 @@ export default {
   edit: "Düzenle",
   created: "Oluşturuldu",
   profile: "Profil",
+  notification_permission_required: "Bildirim izni gereklidir",
+  notification_permission_message:
+    "Güncellemeler için bildirimleri ayarlarda etkinleştirmeniz gerekir.",
+
   member_since: "Kayıt tarihi",
   logout: "Çıkış Yap",
   // Drawer items translations
@@ -69,6 +73,14 @@ export default {
 
   // Other common translations
   Welcome: "Hoş Geldiniz",
+  enter_nickname: "Takma Ad Girin",
+  nickname_required_message:
+    "Hesap silmeyi onaylamak için lütfen takma adınızı girin.",
+  nickname_error: "Takma ad boş olamaz",
+
+  enter_nickname_placeholder: "Takma adınızı girin",
+  cancel: "İptal",
+  confirm: "Onayla",
   Settings: "Ayarlar",
   Cancel: "İptal",
   Submit: "Gönder",
