@@ -57,7 +57,7 @@ const Home: React.FC = () => {
   };
 
   const handleTransactionHistory = () => {
-    navigation.navigate("TransactionHistory");
+    navigation.navigate("HiddenScreens", { screen: "TransactionHistory" });
   };
 
   return (

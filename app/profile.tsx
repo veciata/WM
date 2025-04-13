@@ -420,7 +420,9 @@ const ProfileScreen: React.FC = () => {
         <Text style={styles.sectionTitle}>{t("actions")}</Text>
         <TouchableOpacity
           style={styles.actionItem}
-          onPress={() => navigation.navigate("Settings")}
+          onPress={() =>
+            navigation.navigate("HiddenScreens", { screen: "Settings" })
+          }
         >
           <MaterialIcons
             name="settings"
@@ -436,7 +438,9 @@ const ProfileScreen: React.FC = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.actionItem}
-          onPress={() => navigation.navigate("PasswordUpdate")}
+          onPress={() =>
+            navigation.navigate("HiddenScreens", { screen: "PasswordUpdate" })
+          }
         >
           <MaterialIcons name="lock" size={20} color={colors.textSecondary} />
           <Text style={styles.actionText}>{t("update_password")}</Text>

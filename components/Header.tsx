@@ -1,59 +1,69 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   createDrawerNavigator,
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
 import { createStackNavigator } from "@react-navigation/stack";
-import {
-  ActivityIndicator,
-  View,
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-} from "react-native";
+import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
 import { useLocalization } from "@localization/i18n";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import LocalizationProvider from "@localization/i18n";
-import Home from "./drawer/home";
-import Chat from "./chat";
-import Whitepaper from "./whitepaper";
-import Faq from "./faq";
-import Blog from "./blog";
-import Kyc from "./kyc";
-import Profile from "./profile";
-import LoginScreen from "./auth/login";
-import RegisterScreen from "./auth/register";
-import TransactionHistoryScreen from "./drawer/transaction-history";
-import SettingsScreen from "./settings";
-import PasswordUpdateScreen from "./password-update";
 import {
   Ionicons,
   FontAwesome,
   MaterialIcons,
   AntDesign,
 } from "@expo/vector-icons";
-import DrawerHeader from "@components/Header";
+import Home from "@/app/drawer/home";
+import Chat from "@/app/chat";
+import Whitepaper from "@/app/whitepaper";
+import Faq from "@/app/faq";
+import Blog from "@/app/blog";
+import Kyc from "@/app/kyc";
+import Profile from "@/app/profile";
+import SettingsScreen from "@/app/settings";
+import PasswordUpdateScreen from "@/app/password-update";
+import TransactionHistoryScreen from "@/app/drawer/transaction-history";
 
-const Drawer = createDrawerNavigator();
-const Stack = createStackNavigator();
-
-const HiddenScreensStack = () => {
+const SocialMediaIcons = () => {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Settings" component={SettingsScreen} />
-      <Stack.Screen name="PasswordUpdate" component={PasswordUpdateScreen} />
-      <Stack.Screen
-        name="TransactionHistory"
-        component={TransactionHistoryScreen}
-      />
-    </Stack.Navigator>
+    <View style={styles.socialMediaContainer}>
+      <TouchableOpacity
+        style={styles.socialIcon}
+        onPress={() => console.log("Twitter pressed")}
+      >
+        <FontAwesome name="twitter" size={24} color="#1DA1F2" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.socialIcon}
+        onPress={() => console.log("Facebook pressed")}
+      >
+        <FontAwesome name="facebook" size={24} color="#4267B2" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.socialIcon}
+        onPress={() => console.log("Instagram pressed")}
+      >
+        <FontAwesome name="instagram" size={24} color="#E1306C" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.socialIcon}
+        onPress={() => console.log("Telegram pressed")}
+      >
+        <FontAwesome name="telegram" size={24} color="#0088cc" />
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.socialIcon}
+        onPress={() => console.log("YouTube pressed")}
+      >
+        <AntDesign name="youtube" size={24} color="#FF0000" />
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const LanguageSelector = () => {
   const { t, locale, setLanguage } = useLocalization();
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [showDropdown, setShowDropdown] = React.useState(false);
 
   const languages = [
     { code: "en", name: "English" },
@@ -107,40 +117,19 @@ const LanguageSelector = () => {
   );
 };
 
-const SocialMediaIcons = () => {
+const Drawer = createDrawerNavigator();
+const Stack = createStackNavigator();
+
+const HiddenScreensStack = () => {
   return (
-    <View style={styles.socialMediaContainer}>
-      <TouchableOpacity
-        style={styles.socialIcon}
-        onPress={() => console.log("Twitter pressed")}
-      >
-        <FontAwesome name="twitter" size={24} color="#1DA1F2" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.socialIcon}
-        onPress={() => console.log("Facebook pressed")}
-      >
-        <FontAwesome name="facebook" size={24} color="#4267B2" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.socialIcon}
-        onPress={() => console.log("Instagram pressed")}
-      >
-        <FontAwesome name="instagram" size={24} color="#E1306C" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.socialIcon}
-        onPress={() => console.log("Telegram pressed")}
-      >
-        <FontAwesome name="telegram" size={24} color="#0088cc" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.socialIcon}
-        onPress={() => console.log("YouTube pressed")}
-      >
-        <AntDesign name="youtube" size={24} color="#FF0000" />
-      </TouchableOpacity>
-    </View>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="PasswordUpdate" component={PasswordUpdateScreen} />
+      <Stack.Screen
+        name="TransactionHistory"
+        component={TransactionHistoryScreen}
+      />
+    </Stack.Navigator>
   );
 };
 
@@ -248,80 +237,11 @@ const DrawerScreens = () => {
         name="HiddenScreens"
         component={HiddenScreensStack}
         options={{
-          title: "",
           drawerItemStyle: { display: "none" },
           drawerLabel: () => null,
         }}
       />
     </Drawer.Navigator>
-  );
-};
-
-const MainStack = createStackNavigator();
-
-const MainApp = () => {
-  return (
-    <MainStack.Navigator screenOptions={{ headerShown: false }}>
-      <MainStack.Screen name="Drawer" component={DrawerScreens} />
-      <MainStack.Screen name="HiddenScreens" component={HiddenScreensStack} />
-    </MainStack.Navigator>
-  );
-};
-
-const AuthStack = () => {
-  const { t } = useLocalization();
-
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: true,
-        headerStyle: { backgroundColor: "#324D4C" },
-        headerTintColor: "#fff",
-        headerRight: () => <LanguageSelector />,
-      }}
-    >
-      <Stack.Screen
-        name="auth/login"
-        component={LoginScreen}
-        options={{ title: t("login") }}
-      />
-      <Stack.Screen
-        name="auth/register"
-        component={RegisterScreen}
-        options={{ title: t("register") }}
-      />
-    </Stack.Navigator>
-  );
-};
-
-const RootLayout = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-        setIsAuthenticated(!!token);
-      } catch (error) {
-        console.error("Error checking auth status:", error);
-        setIsAuthenticated(false);
-      }
-    };
-
-    checkAuthStatus();
-
-    const interval = setInterval(checkAuthStatus, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  if (isAuthenticated === null) {
-    return <ActivityIndicator size="large" color="#324D4C" />;
-  }
-
-  return (
-    <LocalizationProvider>
-      {isAuthenticated ? <MainApp /> : <AuthStack />}
-    </LocalizationProvider>
   );
 };
 
@@ -354,4 +274,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RootLayout;
+export default DrawerScreens;
