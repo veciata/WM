@@ -79,7 +79,11 @@ const Home: React.FC = () => {
         disabled={isMiningDisabled || isLoading}
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <MaterialCommunityIcons name="pickaxe" size={20} color="#fff" />
+          <MaterialCommunityIcons
+            name={isMiningDisabled ? "gift-off-outline" : "gift"}
+            size={20}
+            color="#fff"
+          />
           <Text style={{ marginLeft: 8, color: "#fff" }}>
             {isLoading ? (
               <ActivityIndicator color="#fff" size="small" />
@@ -91,10 +95,6 @@ const Home: React.FC = () => {
           </Text>
         </View>
       </Button>
-
-      {isMiningDisabled && remainingTime && (
-        <Text style={styles.cooldownText}>{t("cooldownRemaining")}</Text>
-      )}
 
       <Button
         mode="contained"

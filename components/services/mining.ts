@@ -2,55 +2,42 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Config from "@/config";
 import * as Notifications from "expo-notifications";
 // import AdsService from "./ads";
-
-// Define constants at the top
 const API_URL = Config.API_URL;
-console.log(API_URL);
 const DAILY_MINING_LIMIT = 4;
 const COOLDOWN_HOURS = 23;
 
 export const MiningService = {
   async checkMiningStatus() {
     try {
-      const today = new Date().toDateString();
-      const miningCount =
-        parseInt(await AsyncStorage.getItem(`mining_count_${today}`)) || 0;
-      const lastMiningTime = await AsyncStorage.getItem(
-        `last_mining_time_${today}`,
-      );
+      const response = await fetch(`${API_URL}/v1/mining/status`, {
+        // Fixed the URL syntax
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-      if (miningCount >= DAILY_MINING_LIMIT && lastMiningTime) {
-        const { remainingHours, isCooldownOver } =
-          this.calculateCooldown(lastMiningTime);
-
-        if (!isCooldownOver) {
-          return {
-            isDisabled: true,
-            message: `Daily limit reached. Try again in ${remainingHours} hours.`,
-            remainingTime: `${remainingHours} hours`,
-          };
-        } else {
-          await AsyncStorage.setItem(`mining_count_${today}`, "0");
-          return { isDisabled: false, message: "", remainingTime: "" };
-        }
+      if (!response.ok) {
+        throw new Error("Failed to fetch mining status");
       }
-      return { isDisabled: false, message: "", remainingTime: "" };
+
+      const result = await response.json();
+
+      if (result.success) {
+        return {
+          isDisabled: result.isDisabled, // Boolean to indicate if mining is disabled
+          remainingTime: result.remainingTime, // Remaining time until mining can be re-enabled
+        };
+      } else {
+        throw new Error(result.message || "Error fetching mining status");
+      }
     } catch (error) {
       console.error("Error checking mining status:", error);
-      return { isDisabled: false, message: "", remainingTime: "" };
+      return {
+        isDisabled: true, // Default to disabled if there's an error
+        remainingTime: 0, // No remaining time in case of error
+      };
     }
-  },
-
-  calculateCooldown(lastMiningTime: string) {
-    const lastMining = new Date(lastMiningTime);
-    const now = new Date();
-    const diffHours = (now.getTime() - lastMining.getTime()) / (1000 * 60 * 60);
-    const remainingHours = Math.ceil(COOLDOWN_HOURS - diffHours);
-
-    return {
-      remainingHours,
-      isCooldownOver: diffHours >= COOLDOWN_HOURS,
-    };
   },
 
   async startMining(userId: string) {
@@ -145,5 +132,15 @@ export const MiningService = {
       content: { title, body },
       trigger: null,
     });
+  },
+
+  // Make sure the calculateCooldown method exists
+  calculateCooldown(lastMiningTime) {
+    const now = new Date();
+    const lastMiningDate = new Date(lastMiningTime);
+    const timeDiff = now - lastMiningDate; // Time difference in milliseconds
+    const isCooldownOver = timeDiff >= COOLDOWN_HOURS * 60 * 60 * 1000;
+
+    return { isCooldownOver };
   },
 };
