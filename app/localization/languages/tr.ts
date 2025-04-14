@@ -129,4 +129,5 @@ export default {
   claimReward: "Ödülünü Al",
   // Blog screen
   postNotFound: "Yazı bulunamadı",
+  "The phone has already been taken": "Telefon numarası zaten alınmış",
 };

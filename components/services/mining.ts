@@ -1,18 +1,20 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Config from "@/config";
 import * as Notifications from "expo-notifications";
+import config from "@/config";
+import { Platform } from "react-native";
 // import AdsService from "./ads";
 const API_URL = Config.API_URL;
-const DAILY_MINING_LIMIT = 4;
-const COOLDOWN_HOURS = 23;
 
 export const MiningService = {
   async checkMiningStatus() {
     try {
+      const token = await AsyncStorage.getItem("token");
+
       const response = await fetch(`${API_URL}/v1/mining/status`, {
-        // Fixed the URL syntax
         method: "GET",
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -22,11 +24,12 @@ export const MiningService = {
       }
 
       const result = await response.json();
+      console.log(result);
 
       if (result.success) {
         return {
-          isDisabled: result.isDisabled, // Boolean to indicate if mining is disabled
-          remainingTime: result.remainingTime, // Remaining time until mining can be re-enabled
+          isDisabled: result.isDisabled,
+          remainingTime: result.remainingTime,
         };
       } else {
         throw new Error(result.message || "Error fetching mining status");
@@ -34,8 +37,8 @@ export const MiningService = {
     } catch (error) {
       console.error("Error checking mining status:", error);
       return {
-        isDisabled: true, // Default to disabled if there's an error
-        remainingTime: 0, // No remaining time in case of error
+        isDisabled: true,
+        remainingTime: 0,
       };
     }
   },
@@ -46,43 +49,42 @@ export const MiningService = {
       const miningCount =
         parseInt(await AsyncStorage.getItem(`mining_count_${today}`)) || 0;
 
-      if (miningCount >= DAILY_MINING_LIMIT) {
-        throw new Error(
-          `Daily mining limit reached. Try again in ${COOLDOWN_HOURS} hours.`,
-        );
-      }
+      // Remove the daily limit check
+      // if (miningCount >= DAILY_MINING_LIMIT) {
+      //   throw new Error(`Daily  limit reached. Try again in hours.`);
+      // }
 
-      // Show ad before mining
-      const adsService = AdsService.getInstance();
-      if (!adsService.isAvailable()) {
-        throw new Error("Ad service not available");
-      }
+      // const adsService = AdsService.getInstance();
+      // if (!adsService.isAvailable()) {
+      //   throw new Error("Ad service not available");
+      // }
 
-      const isAdWatched = await adsService.showRewardedAd();
-      if (!isAdWatched) {
-        throw new Error("Failed to watch ad");
-      }
+      // const isAdWatched = await adsService.showRewardedAd();
+      // if (!isAdWatched) {
+      //   throw new Error("Failed to watch ad");
+      // }
+      const isAdWatched = true;
 
-      // Perform mining API call
       const token = await AsyncStorage.getItem("token");
       if (!token) {
         throw new Error("Authentication required");
       }
 
-      const response = await fetch(`${API_URL}/mining/start`, {
+      const response = await fetch(config.API_URL + `/v1/mining/ad-completed`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ user_id: userId }),
+        body: JSON.stringify({
+          user_id: userId,
+          platform: Platform.OS, // Make sure this is not null or undefined
+        }),
       });
-
       if (!response.ok) {
         throw new Error("Mining request failed");
       }
 
-      // Update mining count and last mining time
       const newCount = miningCount + 1;
       await AsyncStorage.setItem(`mining_count_${today}`, newCount.toString());
       await AsyncStorage.setItem(
@@ -92,8 +94,8 @@ export const MiningService = {
 
       return {
         success: true,
-        message: `Mining successful! Remaining attempts: ${DAILY_MINING_LIMIT - newCount}`,
-        remainingCount: DAILY_MINING_LIMIT - newCount,
+        message: `Mining successful!`,
+        remainingCount: newCount,
       };
     } catch (error) {
       console.error("Mining error:", error.message);
@@ -134,11 +136,10 @@ export const MiningService = {
     });
   },
 
-  // Make sure the calculateCooldown method exists
   calculateCooldown(lastMiningTime) {
     const now = new Date();
     const lastMiningDate = new Date(lastMiningTime);
-    const timeDiff = now - lastMiningDate; // Time difference in milliseconds
+    const timeDiff = now - lastMiningDate;
     const isCooldownOver = timeDiff >= COOLDOWN_HOURS * 60 * 60 * 1000;
 
     return { isCooldownOver };

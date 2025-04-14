@@ -55,42 +55,23 @@ const Home: React.FC = () => {
   };
 
   const handleStartMining = async () => {
-    console.log(config.API_URL + `/v1/mining/ad-completed`);
-    setIsLoading(true);
+    setIsLoading(true); // Start loading indicator
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const reward = await MiningService.startMining(userId);
 
-      const response = await fetch(config.API_URL + `/v1/mining/ad-completed`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          platform: Platform.OS,
-        }),
-      });
+      // Handle the successful mining attempt
+      Alert.alert(t("success"), reward.message ?? t("mining_successful"));
 
-      const result = await response.json();
-
-      console.log("Server Response:", result);
-
-      if (result.success) {
-        setUserBalance(result.balance?.toString() || "0"); // Ensure balance is updated correctly
-        Alert.alert(
-          t("success"),
-          t("mining_reward_success", { amount: result.balance }),
-        );
-      } else {
-        Alert.alert(t("error"), t(result.message || "Unknown error"));
-      }
+      // Update user balance after mining attempt (if applicable)
+      setUserBalance(reward.remainingCount.toString());
     } catch (error) {
-      console.log("Error:", error);
+      console.error("Mining error:", error);
 
-      Alert.alert(t("error"), t("mining_reward_success", { amount: 0.025 }));
+      // Show an error alert if mining fails
+      Alert.alert(t("error"), error.message ?? t("mining_failed"));
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Stop loading indicator
     }
   };
 

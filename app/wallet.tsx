@@ -134,13 +134,11 @@ const WalletScreen = () => {
   );
 
   const handleSeeMore = () => {
-    navigation.navigate("TransactionHistory");
+    navigation.navigate("WalletTransactionHistory");
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{t("wallet")}</Text>
-
       <View style={styles.balanceContainer}>
         <Text style={styles.balanceLabel}>{t("balance")}</Text>
         <Text style={styles.balanceValue}>{balance} WM</Text>
