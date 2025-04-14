@@ -10,6 +10,7 @@ export default {
   transactionHistory: "İşlem Geçmişi",
   startMining: "Ödül kazan",
   miningInProgress: "Bir sonraki için lütfen bekleyin",
+  mining_successful: "Ödül verildi",
   Wallet: "Cüzdan",
   //Cüzdan
   balance: "Bakiye",
@@ -20,6 +21,7 @@ export default {
   coin_send: "WM Gönder",
   coin_send_started: "WM gönderme işlemi başlatıldı",
   recent_transactions: "Son İşlemler",
+  no_transactions: "Henüz işlem yok",
   see_more: "Daha Fazla",
   error: "Hata",
   failed_to_load_wallet_transactions: "Cüzdan işlemleri yüklenemedi",
@@ -111,7 +113,7 @@ export default {
   saveChanges: "Değişiklikleri Kaydet",
   requiredFields: "Ad ve E-posta zorunludur",
   profileUpdated: "Profil başarıyla güncellendi!",
-  not_verified: "Onaylandmadı",
+  not_verified: "Onaylanmadı",
   verified: "Onaylandı",
 
   // Password update screen

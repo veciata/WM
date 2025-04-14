@@ -1,12 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Config from "@/config";
-import * as Notifications from "expo-notifications";
-import config from "@/config";
 import { Platform } from "react-native";
-// import AdsService from "./ads";
+import * as Notifications from "expo-notifications";
+
 const API_URL = Config.API_URL;
+const COOLDOWN_HOURS = 23;
 
 export const MiningService = {
+  // Fetch mining status (disabled or remaining time)
   async checkMiningStatus() {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -24,8 +25,6 @@ export const MiningService = {
       }
 
       const result = await response.json();
-      console.log(result);
-
       if (result.success) {
         return {
           isDisabled: result.isDisabled,
@@ -43,34 +42,19 @@ export const MiningService = {
     }
   },
 
+  // Start mining operation
   async startMining(userId: string) {
     try {
       const today = new Date().toDateString();
-      const miningCount =
-        parseInt(await AsyncStorage.getItem(`mining_count_${today}`)) || 0;
 
-      // Remove the daily limit check
-      // if (miningCount >= DAILY_MINING_LIMIT) {
-      //   throw new Error(`Daily  limit reached. Try again in hours.`);
-      // }
-
-      // const adsService = AdsService.getInstance();
-      // if (!adsService.isAvailable()) {
-      //   throw new Error("Ad service not available");
-      // }
-
-      // const isAdWatched = await adsService.showRewardedAd();
-      // if (!isAdWatched) {
-      //   throw new Error("Failed to watch ad");
-      // }
-      const isAdWatched = true;
+      const isAdWatched = true; // Simulating ad watching
 
       const token = await AsyncStorage.getItem("token");
       if (!token) {
         throw new Error("Authentication required");
       }
 
-      const response = await fetch(config.API_URL + `/v1/mining/ad-completed`, {
+      const response = await fetch(`${API_URL}/v1/mining/ad-completed`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,15 +62,27 @@ export const MiningService = {
         },
         body: JSON.stringify({
           user_id: userId,
-          platform: Platform.OS, // Make sure this is not null or undefined
+          platform: Platform.OS,
         }),
       });
-      if (!response.ok) {
-        throw new Error("Mining request failed");
-      }
 
-      const newCount = miningCount + 1;
-      await AsyncStorage.setItem(`mining_count_${today}`, newCount.toString());
+      console.log("response:", response);
+      // Assuming response is a fetch Response object, we need to extract the JSON body first
+      response
+        .json()
+        .then((data) => {
+          console.log("Parsed response:", data);
+
+          if (!data.success) {
+            throw new Error("Mining request failed");
+          }
+          // If necessary, handle the successful response here
+          console.log("Mining success:", data);
+        })
+        .catch((error) => {
+          console.error("Error parsing response:", error);
+        });
+
       await AsyncStorage.setItem(
         `last_mining_time_${today}`,
         new Date().toISOString(),
@@ -95,7 +91,6 @@ export const MiningService = {
       return {
         success: true,
         message: `Mining successful!`,
-        remainingCount: newCount,
       };
     } catch (error) {
       console.error("Mining error:", error.message);
@@ -103,6 +98,35 @@ export const MiningService = {
     }
   },
 
+  // Update user balance after mining
+  async updateUserBalance(userId: string) {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        throw new Error("Authentication required");
+      }
+
+      const response = await fetch(`${API_URL}/v1/user/balance`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch balance");
+      }
+
+      const result = await response.json();
+      return result.balance; // Ensure this matches your API response structure
+    } catch (error) {
+      console.error("Error updating balance:", error);
+      return "0"; // Return a fallback value if an error occurs
+    }
+  },
+
+  // Handle cooldown notifications
   async handleCooldownNotification() {
     try {
       const today = new Date().toDateString();
@@ -114,7 +138,6 @@ export const MiningService = {
         const { isCooldownOver } = this.calculateCooldown(lastMiningTime);
 
         if (isCooldownOver) {
-          await AsyncStorage.setItem(`mining_count_${today}`, "0");
           await this.sendNotification(
             "Kazım Süresi Doldu!",
             "23 saatlik bekleme süreniz doldu. Tekrar kazım yapabilirsiniz!",
@@ -129,6 +152,7 @@ export const MiningService = {
     }
   },
 
+  // Send a push notification
   async sendNotification(title: string, body: string) {
     await Notifications.scheduleNotificationAsync({
       content: { title, body },
@@ -136,6 +160,7 @@ export const MiningService = {
     });
   },
 
+  // Calculate cooldown time
   calculateCooldown(lastMiningTime) {
     const now = new Date();
     const lastMiningDate = new Date(lastMiningTime);

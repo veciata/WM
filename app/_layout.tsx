@@ -36,6 +36,7 @@ import {
 import DrawerHeader from "@components/Header";
 import { UserService } from "@/components/services/user";
 import { router } from "expo-router";
+import Balance from "@components/services/balance";
 import WalletScreen from "./wallet";
 
 const Drawer = createDrawerNavigator();
@@ -176,18 +177,7 @@ const CustomDrawerContent = (props: any) => {
 };
 
 const DrawerScreens = () => {
-  const [userBalance, setUserBalance] = useState("0");
-  useEffect(() => {
-    const initializeApp = async () => {
-      const user = await UserService.getStoredUser();
-      if (!user) {
-        router.replace("/auth/login");
-        return;
-      }
-      setUserBalance(user.balance);
-    };
-    initializeApp();
-  }, []);
+  <Balance />;
   const { t } = useLocalization();
 
   return (
@@ -200,7 +190,7 @@ const DrawerScreens = () => {
         drawerActiveTintColor: "#daba71",
         headerRight: () => <LanguageSelector />,
         headerTitleAlign: "center",
-        title: userBalance,
+        title: <Balance />,
       }}
     >
       <Drawer.Screen

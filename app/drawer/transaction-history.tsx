@@ -77,36 +77,6 @@ export default function TransactionHistoryScreen() {
     );
   }
 
-  const fallbackTransactions: Transaction[] = [
-    {
-      id: 1,
-      userId: "1",
-      type: "mining",
-      amount: 1000,
-      timestamp: "2024-03-20T10:00:00Z",
-      status: "completed",
-      description: "Mining reward",
-    },
-    {
-      id: 2,
-      userId: "1",
-      type: "transfer",
-      amount: 500,
-      timestamp: "2024-03-19T15:30:00Z",
-      status: "pending",
-      description: "Transfer to wallet",
-    },
-    {
-      id: 3,
-      userId: "1",
-      type: "reward",
-      amount: 750,
-      timestamp: "2024-03-18T09:15:00Z",
-      status: "completed",
-      description: "Daily reward",
-    },
-  ];
-
   const getTransactionIcon = (type: Transaction["type"]) => {
     switch (type) {
       case "mining":
@@ -148,7 +118,6 @@ export default function TransactionHistoryScreen() {
 
   const renderTransaction = ({ item }: { item: Transaction }) => (
     <>
-      <Text style={styles.transactionHeader}>{t("transactionHistory")}</Text>
       <TouchableOpacity style={styles.transactionItem}>
         <View style={styles.transactionIconContainer}>
           <Feather
@@ -191,10 +160,13 @@ export default function TransactionHistoryScreen() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={transactions.length > 0 ? transactions : fallbackTransactions}
+        data={transactions}
         renderItem={renderTransaction}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContainer}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>{t("no_transactions")}</Text>
+        }
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -279,5 +251,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
   },
+  emptyText: {
+    textAlign: "center",
+    color: "#999",
+    marginTop: 20,
+    fontSize: 16,
+  },
 });
-

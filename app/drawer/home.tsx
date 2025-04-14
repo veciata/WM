@@ -1,26 +1,13 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Alert,
-  Text,
-  Image,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
+import { View, Alert, Text, Image, ActivityIndicator } from "react-native";
 import { Button } from "react-native-paper";
-import {
-  MaterialCommunityIcons,
-  FontAwesome,
-  Feather,
-} from "@expo/vector-icons";
+import { MaterialCommunityIcons, FontAwesome } from "@expo/vector-icons";
 import styles from "@styles/LandingPageStyles";
 import { useLocalization } from "@localization/i18n";
 import { useRouter, useNavigation } from "expo-router";
 import { UserService } from "@services/user";
 import { MiningService } from "@services/mining";
 import { useBackgroundTasks } from "@hooks/useBackgroundTasks";
-import config from "@/config";
-import { Platform } from "react-native";
 
 const Home: React.FC = () => {
   const { t } = useLocalization();
@@ -61,10 +48,10 @@ const Home: React.FC = () => {
       const reward = await MiningService.startMining(userId);
 
       // Handle the successful mining attempt
-      Alert.alert(t("success"), reward.message ?? t("mining_successful"));
+      Alert.alert(t("success"), t("mining_successful "));
 
       // Update user balance after mining attempt (if applicable)
-      setUserBalance(reward.remainingCount.toString());
+      setUserBalance(reward.balance);
     } catch (error) {
       console.error("Mining error:", error);
 
@@ -73,6 +60,9 @@ const Home: React.FC = () => {
     } finally {
       setIsLoading(false); // Stop loading indicator
     }
+    setIsMiningDisabled(true);
+    await checkMiningStatus();
+    setUserBalance(user.balance);
   };
 
   const handleTransactionHistory = () => {
