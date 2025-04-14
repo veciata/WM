@@ -34,6 +34,9 @@ import {
   AntDesign,
 } from "@expo/vector-icons";
 import DrawerHeader from "@components/Header";
+import { UserService } from "@/components/services/user";
+import { router } from "expo-router";
+import WalletScreen from "./wallet";
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -62,8 +65,20 @@ const LanguageSelector = () => {
 
   return (
     <View style={{ marginRight: 15 }}>
-      <TouchableOpacity onPress={() => setShowDropdown(!showDropdown)}>
-        <Ionicons name="globe" size={24} color="white" />
+      <TouchableOpacity
+        onPress={() => setShowDropdown(!showDropdown)}
+        style={{ flexDirection: "row", alignItems: "center" }}
+      >
+        <Text style={{ color: "white", marginRight: 5 }}>
+          {t("currentLanguage")}
+        </Text>
+        <Ionicons
+          name="globe"
+          size={26}
+          color="white"
+          style={{ marginRight: 5 }}
+        />
+        <Ionicons name="chevron-down" size={26} color="white" />
       </TouchableOpacity>
 
       {showDropdown && (
@@ -161,6 +176,18 @@ const CustomDrawerContent = (props: any) => {
 };
 
 const DrawerScreens = () => {
+  const [userBalance, setUserBalance] = useState("0");
+  useEffect(() => {
+    const initializeApp = async () => {
+      const user = await UserService.getStoredUser();
+      if (!user) {
+        router.replace("/auth/login");
+        return;
+      }
+      setUserBalance(user.balance);
+    };
+    initializeApp();
+  }, []);
   const { t } = useLocalization();
 
   return (
@@ -172,15 +199,27 @@ const DrawerScreens = () => {
         drawerStyle: { width: 280 },
         drawerActiveTintColor: "#daba71",
         headerRight: () => <LanguageSelector />,
+        headerTitleAlign: "center",
+        title: userBalance,
       }}
     >
       <Drawer.Screen
         name="Home"
         component={Home}
         options={{
-          title: t("Home"),
+          drawerLabel: t("Home"),
           drawerIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="Wallet"
+        component={WalletScreen}
+        options={{
+          drawerLabel: t("Wallet"),
+          drawerIcon: ({ color, size }) => (
+            <Ionicons name="wallet" size={size} color={color} />
           ),
         }}
       />
@@ -188,7 +227,7 @@ const DrawerScreens = () => {
         name="Chat"
         component={Chat}
         options={{
-          title: t("Chat"),
+          drawerLabel: t("Chat"),
           drawerIcon: ({ color, size }) => (
             <Ionicons name="chatbubbles" size={size} color={color} />
           ),
@@ -198,7 +237,7 @@ const DrawerScreens = () => {
         name="Whitepaper"
         component={Whitepaper}
         options={{
-          title: t("Whitepaper"),
+          drawerLabel: t("Whitepaper"),
           drawerIcon: ({ color, size }) => (
             <MaterialIcons name="description" size={size} color={color} />
           ),
@@ -208,7 +247,7 @@ const DrawerScreens = () => {
         name="Faq"
         component={Faq}
         options={{
-          title: t("Faq"),
+          drawerLabel: t("Faq"),
           drawerIcon: ({ color, size }) => (
             <MaterialIcons name="help-outline" size={size} color={color} />
           ),
@@ -218,7 +257,7 @@ const DrawerScreens = () => {
         name="Blog"
         component={Blog}
         options={{
-          title: t("Blog"),
+          drawerLabel: t("Blog"),
           drawerIcon: ({ color, size }) => (
             <MaterialIcons name="article" size={size} color={color} />
           ),
@@ -228,7 +267,7 @@ const DrawerScreens = () => {
         name="Kyc"
         component={Kyc}
         options={{
-          title: t("Kyc"),
+          drawerLabel: t("Kyc"),
           drawerIcon: ({ color, size }) => (
             <MaterialIcons name="verified-user" size={size} color={color} />
           ),
@@ -238,7 +277,7 @@ const DrawerScreens = () => {
         name="Profile"
         component={Profile}
         options={{
-          title: t("Profile"),
+          drawerLabel: t("Profile"),
           drawerIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),
@@ -248,7 +287,6 @@ const DrawerScreens = () => {
         name="HiddenScreens"
         component={HiddenScreensStack}
         options={{
-          title: "",
           drawerItemStyle: { display: "none" },
           drawerLabel: () => null,
         }}

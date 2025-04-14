@@ -67,6 +67,9 @@ export default {
   Blog: "Blog",
   Kyc: "Kimlik Doğrulama",
   Profile: "Profil",
+  error: "Hata",
+  ad_not_found: "Reklam Bulunamadı Lütfen Sonra Deneyiniz",
+  rewards_on_cooldown: "Lütfen Sonra Tekrar Deneyiniz",
 
   // Social media footer
   "Follow us on social media": "Sosyal medyada bizi takip edin",
@@ -85,4 +88,31 @@ export default {
   Cancel: "İptal",
   Submit: "Gönder",
   Loading: "Yükleniyor...",
+
+  // Settings screen
+  profileSettings: "Profil Ayarları",
+  fullName: "Tam Ad",
+  nickname: "Takma Ad",
+  phoneNumber: "Telefon Numarası",
+  saveChanges: "Değişiklikleri Kaydet",
+  requiredFields: "Ad ve E-posta zorunludur",
+  profileUpdated: "Profil başarıyla güncellendi!",
+  not_verified: "Onaylandmadı",
+  verified: "Onaylandı",
+
+  // Password update screen
+  profile_settings: "Profil Ayarları",
+  update_password: "Şifre Güncelleme",
+  currentPassword: "Mevcut Şifre",
+  newPassword: "Yeni Şifre",
+  confirmPassword: "Yeni Şifreyi Onayla",
+  updatePassword: "Şifreyi Güncelle",
+  allFieldsRequired: "Tüm alanlar zorunludur",
+  passwordsDontMatch: "Şifreler eşleşmiyor",
+  passwordUpdated: "Şifre başarıyla güncellendi!",
+
+  pleaseWait: "Lütfen Bekleyin",
+  claimReward: "Ödülünü Al",
+  // Blog screen
+  postNotFound: "Yazı bulunamadı",
 };

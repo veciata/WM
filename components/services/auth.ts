@@ -1,10 +1,11 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import config from "@/config";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 class AuthService {
   private static instance: AuthService;
-  private readonly API_URL = 'https://api.world-moneys.com/public/api';
 
-  private constructor() { }
+  private readonly API_URL = config.API_URL;
+  private constructor() {}
 
   public static getInstance(): AuthService {
     if (!AuthService.instance) {
@@ -16,9 +17,9 @@ class AuthService {
   public async login(data: { email: string; password: string }) {
     try {
       const response = await fetch(`${this.API_URL}/auth/login`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
@@ -36,77 +37,76 @@ class AuthService {
 
       return {
         success: false,
-        message: result.message || 'Login failed',
+        message: result.message || "Login failed",
       };
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       return {
         success: false,
-        message: 'An error occurred. Please try again later.',
+        message: "An error occurred. Please try again later.",
       };
     }
   }
   public async register(data: {
-    firstName: string
-    lastName: string
-    email: string
-    phone: string
-    country: string
-    password: string
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    country: string;
+    password: string;
   }) {
     try {
       const response = await fetch(`${this.API_URL}/auth/register`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (response.ok && result.success) {
         return {
           success: true,
           user: result.user,
-        }
+        };
       }
 
       return {
         success: false,
-        message: result.message || 'Register failed',
-      }
+        message: result.message || "Register failed",
+      };
     } catch (error) {
-      console.error('Register error:', error)
+      console.error("Register error:", error);
       return {
         success: false,
-        message: 'An error occurred. Please try again later.',
-      }
+        message: "An error occurred. Please try again later.",
+      };
     }
   }
-
 
   private async saveAuthData(token: string, user: any) {
     try {
       await AsyncStorage.multiSet([
-        ['token', token],
-        ['user', JSON.stringify(user)],
+        ["token", token],
+        ["user", JSON.stringify(user)],
       ]);
     } catch (error) {
-      console.error('Error saving auth data:', error);
+      console.error("Error saving auth data:", error);
     }
   }
 
   public async logout() {
     try {
-      await AsyncStorage.multiRemove(['token', 'user']);
+      await AsyncStorage.multiRemove(["token", "user"]);
     } catch (error) {
-      console.error('Error removing auth data:', error);
+      console.error("Error removing auth data:", error);
     }
   }
 
   public async isAuthenticated() {
-    const token = await AsyncStorage.getItem('token');
+    const token = await AsyncStorage.getItem("token");
     return !!token;
   }
 }

@@ -43,7 +43,7 @@ const BlogDetailScreen: React.FC = () => {
   if (!post) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Yazı bulunamadı</Text>
+        <Text style={styles.errorText}>{t('postNotFound')}</Text>
       </View>
     );
   }
@@ -120,4 +120,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BlogDetailScreen; 
+export default BlogDetailScreen;

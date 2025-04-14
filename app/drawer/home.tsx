@@ -19,6 +19,8 @@ import { useRouter, useNavigation } from "expo-router";
 import { UserService } from "@services/user";
 import { MiningService } from "@services/mining";
 import { useBackgroundTasks } from "@hooks/useBackgroundTasks";
+import config from "@/config";
+import { Platform } from "react-native";
 
 const Home: React.FC = () => {
   const { t } = useLocalization();
@@ -53,7 +55,43 @@ const Home: React.FC = () => {
   };
 
   const handleStartMining = async () => {
-    Alert.alert("Hata", "İnternet bağlantınız yok veya reklam bulunamadı.");
+    console.log(config.API_URL + `/v1/mining/ad-completed`);
+    setIsLoading(true);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const response = await fetch(config.API_URL + `/v1/mining/ad-completed`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          platform: Platform.OS,
+        }),
+      });
+
+      const result = await response.json();
+
+      console.log("Server Response:", result);
+
+      if (result.success) {
+        setUserBalance(result.balance?.toString() || "0"); // Ensure balance is updated correctly
+        Alert.alert(
+          t("success"),
+          t("mining_reward_success", { amount: result.balance }),
+        );
+      } else {
+        Alert.alert(t("error"), t(result.message || "Unknown error"));
+      }
+    } catch (error) {
+      console.log("Error:", error);
+
+      Alert.alert(t("error"), t("mining_reward_success", { amount: 0.025 }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleTransactionHistory = () => {
@@ -66,15 +104,18 @@ const Home: React.FC = () => {
         source={require("@/assets/images/WM-logo.png")}
         style={styles.logo}
       />
-      <View style={styles.balanceContainer}>
-        <Text style={styles.balanceAmount}>
-          {userBalance} {t("coin") ?? "WM"}
-        </Text>
-      </View>
+      {/* <View style={styles.balanceContainer}> */}
+      {/*   <Text style={styles.balanceAmount}> */}
+      {/*     {userBalance} {t("coin") ?? "WM"} */}
+      {/*   </Text> */}
+      {/* </View> */}
 
       <Button
         mode="contained"
-        style={[styles.miningButton, isMiningDisabled && styles.disabledButton]}
+        style={[
+          styles.miningButton,
+          (isMiningDisabled || isLoading) && styles.disabledButton,
+        ]}
         onPress={handleStartMining}
         disabled={isMiningDisabled || isLoading}
       >

@@ -1,68 +1,68 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
 export default StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 40,
-    backgroundColor: '#f8faf6',
-    justifyContent: 'center',
+    backgroundColor: "#f8faf6",
+    justifyContent: "center",
   },
   logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 50,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   logo: {
-    width: 600,
-    height: 190,
+    width: 500,
+    height: 350,
     marginBottom: 30,
-    alignSelf: 'center',
-    resizeMode: 'contain'
+    alignSelf: "center",
+    resizeMode: "contain",
   },
   logoText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   balanceContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 50,
   },
   balanceAmount: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
   balanceSub: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginTop: 10,
   },
   subBalance: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginTop: 10,
   },
   miningButton: {
-    backgroundColor: '#daba71',
+    backgroundColor: "#daba71",
     marginVertical: 15,
     paddingVertical: 12,
     borderRadius: 8,
   },
   disabledButton: {
-    backgroundColor: '#cccccc',
+    backgroundColor: "#cccccc",
   },
   transactionRed: {
-    backgroundColor: '#ff4444',
+    backgroundColor: "#ff4444",
     marginVertical: 15,
     paddingVertical: 12,
     borderRadius: 8,
   },
-}); 
+});

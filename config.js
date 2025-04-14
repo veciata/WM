@@ -1,5 +1,5 @@
 const dev = {
-  API_URL: "http://localhost/api",
+  API_URL: "http://10.0.2.2/api",
 };
 
 const prod = {
