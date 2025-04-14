@@ -1,10 +1,12 @@
+import config from "@/config";
+
 interface Transaction {
   id: number;
   userId: string;
-  type: 'mining' | 'transfer' | 'reward';
+  type: "mining" | "transfer" | "reward";
   amount: number;
   timestamp: string;
-  status: 'completed' | 'pending' | 'failed';
+  status: "completed" | "pending" | "failed";
   description?: string;
 }
 
@@ -16,7 +18,6 @@ interface TransactionResponse {
 
 class TransactionService {
   private static instance: TransactionService;
-  private readonly API_URL = 'https://www.api.world-moneys.com/public/api';
 
   private constructor() {}
 
@@ -27,13 +28,13 @@ class TransactionService {
     return TransactionService.instance;
   }
 
-  public async getTransactions(userId: string, token: string): Promise<TransactionResponse> {
+  public async getTransactions(token: string): Promise<TransactionResponse> {
     try {
-      const response = await fetch(`${this.API_URL}/transactions/${userId}`, {
-        method: 'GET',
+      const response = await fetch(config.API_URL + `/transactions`, {
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -48,13 +49,13 @@ class TransactionService {
 
       return {
         success: false,
-        message: result.message || 'İşlem geçmişi alınamadı.',
+        message: result.message || "İşlem geçmişi alınamadı.",
       };
     } catch (error) {
-      console.error('Get transactions error:', error);
+      console.error("Transaction get error:", error);
       return {
         success: false,
-        message: 'Bir hata oluştu. Lütfen daha sonra tekrar deneyin.',
+        message: "Bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
       };
     }
   }

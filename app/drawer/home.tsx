@@ -143,8 +143,8 @@ const Home: React.FC = () => {
         onPress={handleTransactionHistory}
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <FontAwesome name="file-text-o" size={20} color="#fff" />
-          <Text style={{ marginLeft: 8, color: "#fff" }}>
+          <FontAwesome name="file-text-o" size={20} color="$d3d3d3" />
+          <Text style={{ marginLeft: 8, color: "$d3d3d3" }}>
             {t("transactionHistory")}
           </Text>
         </View>

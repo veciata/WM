@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import { useLocalization } from "@localization/i18n";
 import { Feather } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,24 +28,24 @@ export default function TransactionHistoryScreen() {
 
   const loadTransactions = async () => {
     try {
-      const userId = await AsyncStorage.getItem('userId');
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
 
-      if (!userId || !token) {
-        router.replace('/auth/login');
+      if (!token) {
+        router.replace("/auth/login");
         return;
       }
 
-      const response = await transactionService.getTransactions(userId, token);
+      const response = await transactionService.getTransactions(token);
+
       if (response.success && response.data) {
         setTransactions(response.data);
         setError(null);
       } else {
-        setError(response.message || 'İşlem geçmişi yüklenemedi.');
+        setError(response.message || "İşlem geçmişi yüklenemedi.");
       }
     } catch (error) {
-      console.error('Load transactions error:', error);
-      setError('Bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+      console.error("Load transactions error:", error);
+      setError("Bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -50,7 +58,7 @@ export default function TransactionHistoryScreen() {
   }, []);
 
   useEffect(() => {
-      loadTransactions();
+    loadTransactions();
   }, []);
 
   if (loading) {
@@ -69,60 +77,59 @@ export default function TransactionHistoryScreen() {
     );
   }
 
-  // Örnek işlem verileri (fallback)
   const fallbackTransactions: Transaction[] = [
     {
       id: 1,
-      userId: '1',
-      type: 'mining',
+      userId: "1",
+      type: "mining",
       amount: 1000,
-      timestamp: '2024-03-20T10:00:00Z',
-      status: 'completed',
-      description: 'Mining reward'
+      timestamp: "2024-03-20T10:00:00Z",
+      status: "completed",
+      description: "Mining reward",
     },
     {
       id: 2,
-      userId: '1',
-      type: 'transfer',
+      userId: "1",
+      type: "transfer",
       amount: 500,
-      timestamp: '2024-03-19T15:30:00Z',
-      status: 'pending',
-      description: 'Transfer to wallet'
+      timestamp: "2024-03-19T15:30:00Z",
+      status: "pending",
+      description: "Transfer to wallet",
     },
     {
       id: 3,
-      userId: '1',
-      type: 'reward',
+      userId: "1",
+      type: "reward",
       amount: 750,
-      timestamp: '2024-03-18T09:15:00Z',
-      status: 'completed',
-      description: 'Daily reward'
+      timestamp: "2024-03-18T09:15:00Z",
+      status: "completed",
+      description: "Daily reward",
     },
   ];
 
-  const getTransactionIcon = (type: Transaction['type']) => {
+  const getTransactionIcon = (type: Transaction["type"]) => {
     switch (type) {
-      case 'mining':
-        return 'cpu';
-      case 'transfer':
-        return 'repeat';
-      case 'reward':
-        return 'gift';
+      case "mining":
+        return "cpu";
+      case "transfer":
+        return "repeat";
+      case "reward":
+        return "gift";
       default:
-        return 'circle';
+        return "circle";
     }
   };
 
-  const getTransactionColor = (type: Transaction['type']) => {
+  const getTransactionColor = (type: Transaction["type"]) => {
     switch (type) {
-      case 'mining':
-        return '#4CAF50';
-      case 'transfer':
-        return '#2196F3';
-      case 'reward':
-        return '#daba71';
+      case "mining":
+        return "#4CAF50";
+      case "transfer":
+        return "#2196F3";
+      case "reward":
+        return "#daba71";
       default:
-        return '#757575';
+        return "#757575";
     }
   };
 
@@ -140,34 +147,45 @@ export default function TransactionHistoryScreen() {
   };
 
   const renderTransaction = ({ item }: { item: Transaction }) => (
-    <TouchableOpacity style={styles.transactionItem}>
-      <View style={styles.transactionIconContainer}>
-        <Feather
-          name={getTransactionIcon(item.type)}
-          size={24}
-          color={getTransactionColor(item.type)}
-        />
-      </View>
-      <View style={styles.transactionInfo}>
-        <Text style={styles.transactionType}>
-          {t(`transaction.${item.type}`)}
-        </Text>
-        <Text style={styles.transactionDate}>{new Date(item.timestamp).toLocaleDateString()}</Text>
-      </View>
-      <View style={styles.transactionAmountContainer}>
-        <Text
-          style={[
-            styles.transactionAmount,
-            { color: getTransactionColor(item.type) },
-          ]}
-        >
-          {item.type === 'transfer' ? '-' : '+'}{item.amount.toFixed(2)} WM
-        </Text>
-        <Text style={[styles.transactionStatus, { color: getStatusColor(item.status) }]}>
-          {t(`status.${item.status}`)}
-        </Text>
-      </View>
-    </TouchableOpacity>
+    <>
+      <Text style={styles.transactionHeader}>{t("transactionHistory")}</Text>
+      <TouchableOpacity style={styles.transactionItem}>
+        <View style={styles.transactionIconContainer}>
+          <Feather
+            name={getTransactionIcon(item.type)}
+            size={24}
+            color={getTransactionColor(item.type)}
+          />
+        </View>
+        <View style={styles.transactionInfo}>
+          <Text style={styles.transactionType}>
+            {t(`transaction.${item.type}`)}
+          </Text>
+          <Text style={styles.transactionDate}>
+            {new Date(item.timestamp).toLocaleDateString()}
+          </Text>
+        </View>
+        <View style={styles.transactionAmountContainer}>
+          <Text
+            style={[
+              styles.transactionAmount,
+              { color: getTransactionColor(item.type) },
+            ]}
+          >
+            {item.type === "transfer" ? "-" : "+"}
+            {item.amount} WM
+          </Text>
+          <Text
+            style={[
+              styles.transactionStatus,
+              { color: getStatusColor(item.status) },
+            ]}
+          >
+            {t(`status.${item.status}`)}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </>
   );
 
   return (
@@ -181,7 +199,7 @@ export default function TransactionHistoryScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={['#daba71']}
+            colors={["#daba71"]}
             tintColor="#daba71"
           />
         }
@@ -193,14 +211,14 @@ export default function TransactionHistoryScreen() {
 const styles = StyleSheet.create({
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   errorText: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
   },
   container: {
     flex: 1,
@@ -209,6 +227,14 @@ const styles = StyleSheet.create({
   listContainer: {
     padding: 16,
   },
+  transactionHeader: {
+    fontSize: 25,
+    fontWeight: "bold",
+    color: "daba71",
+    alignSelf: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
   transactionItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -216,7 +242,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.1)',
+    boxShadow: "0px 2px 3.84px rgba(0, 0, 0, 0.1)",
     elevation: 5,
   },
   transactionIconContainer: {
@@ -253,4 +279,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
   },
-}); 
+});
+

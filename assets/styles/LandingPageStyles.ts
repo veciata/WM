@@ -57,10 +57,10 @@ export default StyleSheet.create({
     borderRadius: 8,
   },
   disabledButton: {
-    backgroundColor: "#cccccc",
+    backgroundColor: "#999",
   },
   transactionRed: {
-    backgroundColor: "#ff4444",
+    backgroundColor: "#daba71",
     marginVertical: 15,
     paddingVertical: 12,
     borderRadius: 8,
