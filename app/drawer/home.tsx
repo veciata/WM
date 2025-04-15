@@ -14,7 +14,7 @@ const Home: React.FC = () => {
   const router = useRouter();
   const navigation = useNavigation();
   const [isMiningDisabled, setIsMiningDisabled] = useState(false);
-  const [remainingTime, setRemainingTime] = useState("");
+  const [remainingTime, setRemainingTime] = useState(0);
   const [userId, setUserId] = useState("");
   const [userBalance, setUserBalance] = useState("0");
   const [isLoading, setIsLoading] = useState(false);
@@ -38,27 +38,50 @@ const Home: React.FC = () => {
   const checkMiningStatus = async () => {
     const status = await MiningService.checkMiningStatus();
     setIsMiningDisabled(status.isDisabled);
-    setRemainingTime(status.remainingTime);
+    setRemainingTime(status.remainingTime || 0);
+    console.log("Remaining time:", formatRemainingTime(status.remainingTime));
+
+    // Start interval to decrease remainingTime by 1 every second
+    if (status.remainingTime > 0) {
+      const intervalId = setInterval(() => {
+        setRemainingTime((prevTime) => {
+          if (prevTime <= 1) {
+            clearInterval(intervalId); // Stop interval when time is up
+            return 0;
+          }
+          return prevTime - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(intervalId); // Cleanup the interval on unmount or re-run
+    }
+  };
+
+  const formatRemainingTime = (seconds: number) => {
+    if (seconds < 0) {
+      seconds = 0;
+    }
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const sec = Math.floor(seconds % 60);
+
+    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
   };
 
   const handleStartMining = async () => {
-    setIsLoading(true); // Start loading indicator
+    setIsLoading(true);
 
     try {
       const reward = await MiningService.startMining(userId);
-
-      // Handle the successful mining attempt
       Alert.alert(t("success"), t("mining_successful "));
 
-      // Update user balance after mining attempt (if applicable)
       setUserBalance(reward.balance);
     } catch (error) {
       console.error("Mining error:", error);
-
-      // Show an error alert if mining fails
       Alert.alert(t("error"), error.message ?? t("mining_failed"));
     } finally {
-      setIsLoading(false); // Stop loading indicator
+      setIsLoading(false);
     }
     setIsMiningDisabled(true);
     await checkMiningStatus();
@@ -75,11 +98,6 @@ const Home: React.FC = () => {
         source={require("@/assets/images/WM-logo.png")}
         style={styles.logo}
       />
-      {/* <View style={styles.balanceContainer}> */}
-      {/*   <Text style={styles.balanceAmount}> */}
-      {/*     {userBalance} {t("coin") ?? "WM"} */}
-      {/*   </Text> */}
-      {/* </View> */}
 
       <Button
         mode="contained"
@@ -100,7 +118,7 @@ const Home: React.FC = () => {
             {isLoading ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : isMiningDisabled ? (
-              t("miningInProgress")
+              `${t("miningInProgress")} (${formatRemainingTime(remainingTime)})`
             ) : (
               t("startMining")
             )}

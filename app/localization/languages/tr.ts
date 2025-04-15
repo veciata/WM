@@ -9,7 +9,7 @@ export default {
   wesur: "WM Evlerinde Wesur",
   transactionHistory: "İşlem Geçmişi",
   startMining: "Ödül kazan",
-  miningInProgress: "Bir sonraki için lütfen bekleyin",
+  miningInProgress: "Sonraki ödül için",
   mining_successful: "Ödül verildi",
   Wallet: "Cüzdan",
   //Cüzdan
@@ -56,10 +56,10 @@ export default {
   commingsoon: "Yakında burada",
   inviteLink: "Davet Linki",
   account_information: "Hesap Bilgileri",
-  verification_status: "Doğrulama Durumu",
-  email_verification: "E-posta Doğrulama",
-  phone_verification: "Telefon Doğrulama",
-  facebook_verification: "Facebook Doğrulama",
+  verification_status: "Doğrulama Durumu",
+  email_verification: "E-posta Doğrulama",
+  phone_verification: "Telefon Doğrulama",
+  facebook_verification: "Facebook Doğrulama",
   actions: "Aksiyonlar",
   proile_settings: "Profil Ayarları",
   update_pasword: "Şifre Güncelle",
@@ -72,7 +72,6 @@ export default {
   notification_permission_required: "Bildirim izni gereklidir",
   notification_permission_message:
     "Güncellemeler için bildirimleri ayarlarda etkinleştirmeniz gerekir.",
-
   member_since: "Kayıt tarihi",
   logout: "Çıkış Yap",
   // Drawer items translations
@@ -83,7 +82,6 @@ export default {
   Blog: "Blog",
   Kyc: "Kimlik Doğrulama",
   Profile: "Profil",
-  error: "Hata",
   ad_not_found: "Reklam Bulunamadı Lütfen Sonra Deneyiniz",
   rewards_on_cooldown: "Lütfen Sonra Tekrar Deneyiniz",
 
@@ -132,4 +130,8 @@ export default {
   // Blog screen
   postNotFound: "Yazı bulunamadı",
   "The phone has already been taken": "Telefon numarası zaten alınmış",
+  // Mining Status Related Translations
+  hours: "Saat",
+  minutes: "Dakika",
+  seconds: "Saniye",
 };
