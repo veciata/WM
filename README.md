@@ -1,50 +1,53 @@
-# Welcome to your Expo app 👋
+# 🌍 WorldMoney (WM)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**WorldMoney** is a minimalist, high-performance currency converter for mobile devices. It provides instant exchange rates for over 150+ international currencies with a focus on speed and reliability.
 
-## Get started
+## 🚀 Key Features
 
-1. Install dependencies
+* **Real-Time Rates:** Accurate exchange rates updated hourly via reliable financial APIs.
+* **150+ Currencies:** Global coverage including USD, EUR, TRY, GBP, JPY, and more.
+* **Offline Mode:** Convert currencies even without an internet connection using the latest cached data.
+* **Lightweight UI:** Clean, distraction-free interface built for efficiency.
 
-   ```bash
-   npm install
-   ```
+## 🛠 Technical Overview
 
-2. Start the app
+The application is built using a modern mobile development stack for performance and type safety:
 
-   ```bash
-    npx expo start
-   ```
+* **Language:** [TypeScript](https://www.typescriptlang.org/)
+* **Framework:** [React Native](https://reactnative.dev/)
+* **Architecture:** Reactive state management for instant calculations.
 
-In the output, you'll find options to open the app in a
+## 📲 Download
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+The official version is available for download on the Google Play Store:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+👉 **[WorldMoney - Google Play Store](https://play.google.com/store/apps/details?id=com.worldmoney)**
 
-## Get a fresh project
+## 🛠 Installation & Setup
 
-When you're ready, run:
+To run the project locally for development:
 
-```bash
-npm run reset-project
-```
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/veciata/WM.git
+    ```
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+3.  **Launch the application:**
+    ```bash
+    # For Android
+    npx react-native run-android
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+    # For iOS
+    npx react-native run-ios
+    ```
 
-## Learn more
+## 📄 License
 
-To learn more about developing your project with Expo, look at the following resources:
+This project is licensed under the **MIT License**.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+---
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+**Developer:** [Salih SARI (veciata)](https://github.com/veciata)
