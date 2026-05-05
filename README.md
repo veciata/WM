@@ -4,9 +4,6 @@
 
 ## 🚀 Key Features
 
-* **Real-Time Rates:** Accurate exchange rates updated hourly via reliable financial APIs.
-* **150+ Currencies:** Global coverage including USD, EUR, TRY, GBP, JPY, and more.
-* **Offline Mode:** Convert currencies even without an internet connection using the latest cached data.
 * **Lightweight UI:** Clean, distraction-free interface built for efficiency.
 
 ## 🛠 Technical Overview
